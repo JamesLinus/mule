@@ -6,17 +6,18 @@
  */
 package org.mule.runtime.module.extension.internal.runtime;
 
-import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.api.meta.model.ComponentModel;
 import org.mule.runtime.core.api.Event;
+import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.transaction.TransactionConfig;
+import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 import org.mule.runtime.extension.api.runtime.operation.Interceptor;
-import org.mule.runtime.extension.api.runtime.operation.OperationContext;
 import org.mule.runtime.extension.api.runtime.operation.OperationExecutor;
 
 import java.util.Optional;
 
 /**
- * Adapter interface which expands the contract of {@link OperationContext} which functionality that is internal to this
+ * Adapter interface which expands the contract of {@link ExecutionContext} which functionality that is internal to this
  * implementation of the extensions API and shouldn't be accessible for the extensions themselves.
  * <p/>
  * Among other things, it adds the concept of variables, which are key-value pairs in order to contain state that is not specific
@@ -26,7 +27,7 @@ import java.util.Optional;
  *
  * @since 3.7.0
  */
-public interface OperationContextAdapter extends OperationContext {
+public interface ExecutionContextAdapter<M extends ComponentModel> extends ExecutionContext<M> {
 
   /**
    * Returns the {@link Event} on which an operation is to be executed
@@ -45,7 +46,7 @@ public interface OperationContextAdapter extends OperationContext {
   /**
    * Sets a variable of the given {@code key} and {@code value}.
    *
-   * @param key the variable's key. Cannot be {@code null}
+   * @param key   the variable's key. Cannot be {@code null}
    * @param value the associated value. Cannot be {@code null}
    * @return the value previously associated with the {@code key} or {@code null} if no such association existed.
    */

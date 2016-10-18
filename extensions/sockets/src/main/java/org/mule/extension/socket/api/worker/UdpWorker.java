@@ -14,8 +14,8 @@ import static org.mule.extension.socket.internal.SocketUtils.getUdpAllowedByteAr
 
 import org.mule.extension.socket.api.ImmutableSocketAttributes;
 import org.mule.extension.socket.api.SocketAttributes;
-import org.mule.runtime.api.execution.CompletionHandler;
-import org.mule.runtime.api.execution.ExceptionCallback;
+import org.mule.runtime.core.execution.CompletionHandler;
+import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.api.message.MuleEvent;
 import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.extension.api.runtime.MessageHandler;

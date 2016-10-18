@@ -18,6 +18,7 @@ import static org.mule.runtime.core.util.StringUtils.isBlank;
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.isVoid;
 import static org.mule.runtime.module.extension.internal.util.MuleExtensionUtils.getClassLoader;
 import static org.mule.runtime.module.extension.internal.util.MuleExtensionUtils.getOperationExecutorFactory;
+import static org.slf4j.LoggerFactory.getLogger;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.config.ConfigurationModel;
 import org.mule.runtime.api.meta.model.operation.OperationModel;
@@ -43,16 +44,15 @@ import org.mule.runtime.module.extension.internal.manager.ExtensionManagerAdapte
 import org.mule.runtime.module.extension.internal.metadata.EntityMetadataMediator;
 import org.mule.runtime.module.extension.internal.model.property.OperationExecutorModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.DefaultExecutionMediator;
-import org.mule.runtime.module.extension.internal.runtime.DefaultOperationContext;
+import org.mule.runtime.module.extension.internal.runtime.DefaultExecutionContext;
+import org.mule.runtime.module.extension.internal.runtime.ExecutionContextAdapter;
 import org.mule.runtime.module.extension.internal.runtime.ExecutionMediator;
 import org.mule.runtime.module.extension.internal.runtime.ExtensionComponent;
-import org.mule.runtime.module.extension.internal.runtime.OperationContextAdapter;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
 
 import java.util.Optional;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A {@link Processor} capable of executing extension operations.
@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
  */
 public class OperationMessageProcessor extends ExtensionComponent implements Processor, EntityMetadataProvider, Lifecycle {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OperationMessageProcessor.class);
+  private static final Logger LOGGER = getLogger(OperationMessageProcessor.class);
   static final String INVALID_TARGET_MESSAGE =
       "Flow '%s' defines an invalid usage of operation '%s' which uses %s as target";
 
@@ -106,20 +106,20 @@ public class OperationMessageProcessor extends ExtensionComponent implements Pro
   public Event process(Event event) throws MuleException {
     return (Event) withContextClassLoader(getExtensionClassLoader(), () -> {
       Optional<ConfigurationInstance> configuration = getConfiguration(event);
-      OperationContextAdapter operationContext = createOperationContext(configuration, event);
+      ExecutionContextAdapter operationContext = createExecutionContext(configuration, event);
       return doProcess(event, operationContext);
     }, MuleException.class, e -> {
       throw new DefaultMuleException(e);
     });
   }
 
-  protected org.mule.runtime.api.message.MuleEvent doProcess(Event event, OperationContextAdapter operationContext)
+  protected org.mule.runtime.api.message.MuleEvent doProcess(Event event, ExecutionContextAdapter operationContext)
       throws MuleException {
     Object result = executeOperation(operationContext, event);
     return returnDelegate.asReturnValue(result, operationContext);
   }
 
-  private Object executeOperation(OperationContextAdapter operationContext, Event event) throws MuleException {
+  private Object executeOperation(ExecutionContextAdapter operationContext, Event event) throws MuleException {
     try {
       return executionMediator.execute(operationExecutor, operationContext);
     } catch (MessagingException e) {
@@ -136,9 +136,9 @@ public class OperationMessageProcessor extends ExtensionComponent implements Pro
     return new MessagingException(createStaticMessage(e.getMessage()), event, e, this);
   }
 
-  private OperationContextAdapter createOperationContext(Optional<ConfigurationInstance> configuration, Event event)
+  private ExecutionContextAdapter<OperationModel> createExecutionContext(Optional<ConfigurationInstance> configuration, Event event)
       throws MuleException {
-    return new DefaultOperationContext(extensionModel, configuration, resolverSet.resolve(event), operationModel, event,
+    return new DefaultExecutionContext(extensionModel, configuration, resolverSet.resolve(event), operationModel, event,
                                        muleContext);
   }
 

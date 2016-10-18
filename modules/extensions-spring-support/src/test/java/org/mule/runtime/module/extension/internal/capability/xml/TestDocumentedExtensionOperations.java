@@ -7,7 +7,7 @@
 package org.mule.runtime.module.extension.internal.capability.xml;
 
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
-import org.mule.runtime.extension.api.annotation.param.Ignore;
+import org.mule.runtime.extension.api.annotation.Ignore;
 
 public class TestDocumentedExtensionOperations {
 

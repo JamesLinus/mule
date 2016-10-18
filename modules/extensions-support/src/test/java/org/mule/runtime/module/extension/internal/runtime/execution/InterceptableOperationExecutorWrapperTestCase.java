@@ -4,15 +4,16 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.extension.internal.runtime.executor;
+package org.mule.runtime.module.extension.internal.runtime.execution;
 
 import static org.mockito.Mockito.verify;
+import org.mule.runtime.api.meta.model.operation.OperationModel;
 import org.mule.runtime.core.api.lifecycle.Disposable;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
 import org.mule.runtime.core.api.lifecycle.Lifecycle;
 import org.mule.runtime.core.api.lifecycle.Startable;
 import org.mule.runtime.core.api.lifecycle.Stoppable;
-import org.mule.runtime.extension.api.runtime.operation.OperationContext;
+import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 import org.mule.runtime.extension.api.runtime.operation.OperationExecutor;
 import org.mule.runtime.module.extension.internal.AbstractInterceptableContractTestCase;
 
@@ -26,7 +27,7 @@ public class InterceptableOperationExecutorWrapperTestCase
   private OperationExecutor executor;
 
   @Mock
-  private OperationContext operationContext;
+  private ExecutionContext<OperationModel> executionContext;
 
   @Override
   protected InterceptableOperationExecutorWrapper createInterceptable() {
@@ -35,8 +36,8 @@ public class InterceptableOperationExecutorWrapperTestCase
 
   @Test
   public void execute() throws Exception {
-    interceptable.execute(operationContext);
-    verify(executor).execute(operationContext);
+    interceptable.execute(executionContext);
+    verify(executor).execute(executionContext);
   }
 
   @Test

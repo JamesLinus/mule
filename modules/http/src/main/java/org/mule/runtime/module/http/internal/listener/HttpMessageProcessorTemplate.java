@@ -64,7 +64,7 @@ public class HttpMessageProcessorTemplate implements AsyncResponseFlowProcessing
   }
 
   @Override
-  public Event getMuleEvent() throws MuleException {
+  public Event getEvent() throws MuleException {
     return this.sourceMuleEvent;
   }
 

@@ -6,7 +6,7 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.resolver;
 
-import org.mule.runtime.extension.api.runtime.operation.OperationContext;
+import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 
 /**
  * A component for resolving the value of an operation's argument
@@ -19,8 +19,8 @@ public interface ArgumentResolver<T> {
   /**
    * Resolves an argument's value from the given {@code operationContext}
    *
-   * @param operationContext an {@link OperationContext}
+   * @param operationContext an {@link ExecutionContext}
    * @return a value
    */
-  T resolve(OperationContext operationContext);
+  T resolve(ExecutionContext operationContext);
 }

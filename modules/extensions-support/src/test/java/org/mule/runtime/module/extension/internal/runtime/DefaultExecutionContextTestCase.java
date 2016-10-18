@@ -38,7 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @SmallTest
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultOperationContextTestCase extends AbstractMuleTestCase {
+public class DefaultExecutionContextTestCase extends AbstractMuleTestCase {
 
   private static final String CONFIG_NAME = "config";
   private static final String PARAM_NAME = "param1";
@@ -67,7 +67,7 @@ public class DefaultOperationContextTestCase extends AbstractMuleTestCase {
 
   private Object configurationInstance = new Object();
   private ConfigurationInstance configuration;
-  private DefaultOperationContext operationContext;
+  private DefaultExecutionContext operationContext;
 
 
   @Before
@@ -79,7 +79,7 @@ public class DefaultOperationContextTestCase extends AbstractMuleTestCase {
     when(resolverSetResult.asMap()).thenReturn(parametersMap);
 
     operationContext =
-        new DefaultOperationContext(extensionModel, of(configuration), resolverSetResult, operationModel, event, muleContext);
+        new DefaultExecutionContext(extensionModel, of(configuration), resolverSetResult, operationModel, event, muleContext);
   }
 
   @Test

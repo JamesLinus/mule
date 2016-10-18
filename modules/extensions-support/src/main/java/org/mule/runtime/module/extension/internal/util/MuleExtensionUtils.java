@@ -9,14 +9,19 @@ package org.mule.runtime.module.extension.internal.util;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.mule.runtime.api.metadata.MediaType.ANY;
 import static org.mule.runtime.core.DefaultEventContext.create;
 import static org.mule.runtime.core.MessageExchangePattern.REQUEST_RESPONSE;
 import static org.mule.runtime.core.api.transaction.TransactionConfig.ACTION_ALWAYS_JOIN;
 import static org.mule.runtime.core.api.transaction.TransactionConfig.ACTION_JOIN_IF_POSSIBLE;
 import static org.mule.runtime.core.api.transaction.TransactionConfig.ACTION_NOT_SUPPORTED;
+import static org.mule.runtime.core.message.NullAttributes.NULL_ATTRIBUTES;
 import static org.mule.runtime.core.util.ClassUtils.withContextClassLoader;
 import static org.springframework.util.ReflectionUtils.setField;
+import org.mule.runtime.api.message.Attributes;
+import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.meta.NamedObject;
+import org.mule.runtime.api.meta.model.ComponentModel;
 import org.mule.runtime.api.meta.model.EnrichableModel;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.ModelProperty;
@@ -26,6 +31,7 @@ import org.mule.runtime.api.meta.model.declaration.fluent.BaseDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.OperationDeclaration;
 import org.mule.runtime.api.meta.model.operation.OperationModel;
 import org.mule.runtime.api.meta.model.source.SourceModel;
+import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.construct.FlowConstruct;
@@ -47,6 +53,7 @@ import org.mule.runtime.extension.api.introspection.property.ConnectivityModelPr
 import org.mule.runtime.extension.api.runtime.InterceptorFactory;
 import org.mule.runtime.extension.api.runtime.operation.Interceptor;
 import org.mule.runtime.extension.api.runtime.operation.OperationExecutorFactory;
+import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.source.SourceFactory;
 import org.mule.runtime.extension.api.tx.OperationTransactionalAction;
 import org.mule.runtime.module.extension.internal.exception.IllegalConfigurationModelDefinitionException;
@@ -62,7 +69,7 @@ import org.mule.runtime.module.extension.internal.model.property.MetadataResolve
 import org.mule.runtime.module.extension.internal.model.property.OperationExecutorModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.RequireNameField;
 import org.mule.runtime.module.extension.internal.model.property.SourceFactoryModelProperty;
-import org.mule.runtime.module.extension.internal.runtime.executor.OperationExecutorFactoryWrapper;
+import org.mule.runtime.module.extension.internal.runtime.execution.OperationExecutorFactoryWrapper;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
 
 import com.google.common.collect.ImmutableList;
@@ -83,6 +90,19 @@ import java.util.function.Supplier;
  * @since 3.7.0
  */
 public class MuleExtensionUtils {
+
+
+  public static Message toMessage(Result result) {
+    return toMessage(result, (MediaType) result.getMediaType().orElse(ANY));
+  }
+
+  public static Message toMessage(Result result, MediaType mediaType) {
+    return Message.builder()
+        .payload(result.getOutput())
+        .mediaType(mediaType)
+        .attributes((Attributes) result.getAttributes().orElse(NULL_ATTRIBUTES))
+        .build();
+  }
 
   /**
    * Returns {@code true} if any of the items in {@code resolvers} return true for the {@link ValueResolver#isDynamic()} method
@@ -334,7 +354,7 @@ public class MuleExtensionUtils {
     throw new IllegalArgumentException("Unsupported action: " + action.name());
   }
 
-  public static boolean isTransactional(OperationModel operationModel) {
+  public static boolean isTransactional(ComponentModel operationModel) {
     return operationModel
         .getModelProperty(ConnectivityModelProperty.class)
         .map(ConnectivityModelProperty::supportsTransactions)

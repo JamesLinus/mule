@@ -4,7 +4,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.extension.internal.runtime.executor;
+package org.mule.runtime.module.extension.internal.runtime.operation;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
@@ -30,10 +30,10 @@ import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.extension.api.ExtensionManager;
 import org.mule.runtime.extension.api.runtime.ConfigurationInstance;
-import org.mule.runtime.extension.api.runtime.operation.OperationResult;
+import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.module.extension.internal.model.property.ParameterGroupModelProperty;
-import org.mule.runtime.module.extension.internal.runtime.DefaultOperationContext;
-import org.mule.runtime.module.extension.internal.runtime.OperationContextAdapter;
+import org.mule.runtime.module.extension.internal.runtime.DefaultExecutionContext;
+import org.mule.runtime.module.extension.internal.runtime.ExecutionContextAdapter;
 import org.mule.runtime.module.extension.internal.runtime.config.LifecycleAwareConfigurationInstance;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSetResult;
 import org.mule.tck.junit4.AbstractMuleTestCase;
@@ -83,7 +83,7 @@ public class ReflectiveMethodOperationExecutorTestCase extends AbstractMuleTestC
 
   private ReflectiveMethodOperationExecutor executor;
   private ConfigurationInstance configurationInstance;
-  private OperationContextAdapter operationContext;
+  private ExecutionContextAdapter operationContext;
   private HeisenbergExtension config;
   private HeisenbergOperations operations;
   private PrimitiveTypesTestOperations primitiveTypesTestOperations = new PrimitiveTypesTestOperations();
@@ -96,7 +96,7 @@ public class ReflectiveMethodOperationExecutorTestCase extends AbstractMuleTestC
         new LifecycleAwareConfigurationInstance(CONFIG_NAME, configurationModel, config, emptyList(), Optional.empty());
     when(muleEvent.getMessage().getPayload().getDataType()).thenReturn(DATA_TYPE);
     when(operationModel.getModelProperty(ParameterGroupModelProperty.class)).thenReturn(Optional.empty());
-    operationContext = new DefaultOperationContext(extensionModel, of(configurationInstance), parameters, operationModel,
+    operationContext = new DefaultExecutionContext(extensionModel, of(configurationInstance), parameters, operationModel,
                                                    muleEvent, muleContext);
     operationContext = spy(operationContext);
   }
@@ -142,7 +142,7 @@ public class ReflectiveMethodOperationExecutorTestCase extends AbstractMuleTestC
         ClassUtils.getMethod(HeisenbergOperations.class, "getEnemy", new Class<?>[] {HeisenbergExtension.class, int.class});
     executor = new ReflectiveMethodOperationExecutor(operationModel, method, operations);
 
-    assertResult(((OperationResult) executor.execute(operationContext)).getOutput(), "Hank");
+    assertResult(((Result) executor.execute(operationContext)).getOutput(), "Hank");
   }
 
   @Test

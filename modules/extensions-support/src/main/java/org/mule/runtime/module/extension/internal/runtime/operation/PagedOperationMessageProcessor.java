@@ -18,7 +18,7 @@ import org.mule.runtime.core.streaming.Producer;
 import org.mule.runtime.extension.api.introspection.streaming.PagingProvider;
 import org.mule.runtime.extension.api.runtime.ConfigurationProvider;
 import org.mule.runtime.module.extension.internal.manager.ExtensionManagerAdapter;
-import org.mule.runtime.module.extension.internal.runtime.OperationContextAdapter;
+import org.mule.runtime.module.extension.internal.runtime.ExecutionContextAdapter;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
 import org.mule.runtime.module.extension.internal.runtime.streaming.PagingProviderProducer;
 
@@ -39,7 +39,7 @@ public class PagedOperationMessageProcessor extends OperationMessageProcessor {
   }
 
   @Override
-  protected org.mule.runtime.api.message.MuleEvent doProcess(Event event, OperationContextAdapter operationContext)
+  protected org.mule.runtime.api.message.MuleEvent doProcess(Event event, ExecutionContextAdapter operationContext)
       throws MuleException {
 
     Event resultEvent = (Event) super.doProcess(event, operationContext);

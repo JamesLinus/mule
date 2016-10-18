@@ -4,31 +4,31 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.extension.internal.runtime.executor;
+package org.mule.runtime.module.extension.internal.runtime.execution;
 
 import static org.apache.commons.lang.ArrayUtils.isEmpty;
+import static org.mule.runtime.module.extension.internal.introspection.describer.MuleExtensionAnnotationParser.getParamNames;
 import static org.mule.runtime.module.extension.internal.introspection.describer.MuleExtensionAnnotationParser.toMap;
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.isParameterContainer;
 import org.mule.metadata.java.api.JavaTypeLoader;
 import org.mule.runtime.api.message.Message;
+import org.mule.runtime.api.meta.model.ComponentModel;
+import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
-import org.mule.runtime.api.meta.model.operation.OperationModel;
-import org.mule.runtime.api.meta.model.parameter.ParameterModel;
+import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 import org.mule.runtime.extension.api.runtime.operation.ParameterResolver;
-import org.mule.runtime.extension.api.runtime.operation.OperationContext;
 import org.mule.runtime.module.extension.internal.introspection.ParameterGroup;
-import org.mule.runtime.module.extension.internal.introspection.describer.MuleExtensionAnnotationParser;
 import org.mule.runtime.module.extension.internal.model.property.ParameterGroupModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ByParameterNameArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ConfigurationArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ConnectionArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.EventArgumentResolver;
-import org.mule.runtime.module.extension.internal.runtime.resolver.ParameterResolverArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.MessageArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ParameterGroupArgumentResolver;
+import org.mule.runtime.module.extension.internal.runtime.resolver.ParameterResolverArgumentResolver;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -40,7 +40,7 @@ import java.util.Optional;
 
 
 /**
- * Resolves the values of an {@link OperationModel}'s {@link ParameterModel parameterModels} by matching them to the arguments in
+ * Resolves the values of an {@link ComponentModel}'s {@link ParameterModel parameterModels} by matching them to the arguments in
  * a {@link Method}
  *
  * @since 3.7.0
@@ -63,12 +63,12 @@ public final class MethodArgumentResolverDelegate implements ArgumentResolverDel
    *
    * @param method the {@link Method} to be called
    */
-  public MethodArgumentResolverDelegate(OperationModel operationModel, Method method) {
+  public MethodArgumentResolverDelegate(ComponentModel componentModel, Method method) {
     this.method = method;
-    initArgumentResolvers(operationModel);
+    initArgumentResolvers(componentModel);
   }
 
-  private void initArgumentResolvers(OperationModel model) {
+  private void initArgumentResolvers(ComponentModel model) {
     final Class<?>[] parameterTypes = method.getParameterTypes();
 
     if (isEmpty(parameterTypes)) {
@@ -80,7 +80,7 @@ public final class MethodArgumentResolverDelegate implements ArgumentResolverDel
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     Parameter[] parameters = method.getParameters();
     parameterGroupResolvers = getParameterGroupResolvers(model);
-    final List<String> paramNames = MuleExtensionAnnotationParser.getParamNames(method);
+    final List<String> paramNames = getParamNames(method);
 
     for (int i = 0; i < parameterTypes.length; i++) {
       final Class<?> parameterType = parameterTypes[i];
@@ -109,12 +109,12 @@ public final class MethodArgumentResolverDelegate implements ArgumentResolverDel
   }
 
   @Override
-  public Object[] resolve(OperationContext operationContext, Class<?>[] parameterTypes) {
+  public Object[] resolve(ExecutionContext executionContext, Class<?>[] parameterTypes) {
 
     Object[] parameterValues = new Object[argumentResolvers.length];
     int i = 0;
     for (ArgumentResolver<?> argumentResolver : argumentResolvers) {
-      parameterValues[i++] = argumentResolver.resolve(operationContext);
+      parameterValues[i++] = argumentResolver.resolve(executionContext);
     }
 
     return resolvePrimitiveTypes(parameterTypes, parameterValues);
@@ -167,7 +167,7 @@ public final class MethodArgumentResolverDelegate implements ArgumentResolverDel
    * @param model operation model
    * @return mapping between the {@link Method}'s arguments which are parameters groups and their respective resolvers
    */
-  private Map<Parameter, ParameterGroupArgumentResolver<? extends Object>> getParameterGroupResolvers(OperationModel model) {
+  private Map<Parameter, ParameterGroupArgumentResolver<? extends Object>> getParameterGroupResolvers(ComponentModel model) {
     Optional<ParameterGroupModelProperty> parameterGroupModelProperty = model.getModelProperty(ParameterGroupModelProperty.class);
     Map<Parameter, ParameterGroupArgumentResolver<? extends Object>> resolverMap = new HashMap<>();
 

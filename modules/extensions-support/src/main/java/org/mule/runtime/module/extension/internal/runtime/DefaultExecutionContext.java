@@ -12,14 +12,14 @@ import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import static org.mule.runtime.module.extension.internal.ExtensionProperties.TRANSACTIONAL_ACTION_PARAMETER_NAME;
 import static org.mule.runtime.module.extension.internal.util.MuleExtensionUtils.isTransactional;
 import static org.mule.runtime.module.extension.internal.util.MuleExtensionUtils.toActionCode;
+import org.mule.runtime.api.meta.model.ComponentModel;
 import org.mule.runtime.api.meta.model.ExtensionModel;
-import org.mule.runtime.api.meta.model.operation.OperationModel;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.transaction.TransactionConfig;
 import org.mule.runtime.core.transaction.MuleTransactionConfig;
-import org.mule.runtime.extension.api.tx.OperationTransactionalAction;
 import org.mule.runtime.extension.api.runtime.ConfigurationInstance;
+import org.mule.runtime.extension.api.tx.OperationTransactionalAction;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSetResult;
 import org.mule.runtime.module.extension.internal.runtime.transaction.ExtensionTransactionFactory;
 
@@ -30,12 +30,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * Default implementation of {@link OperationContextAdapter} which adds additional information which is relevant to this
+ * Default implementation of {@link ExecutionContextAdapter} which adds additional information which is relevant to this
  * implementation of the extensions-api, even though it's not part of the API itself
  *
  * @since 3.7.0
  */
-public class DefaultOperationContext implements OperationContextAdapter {
+public class DefaultExecutionContext<M extends ComponentModel> implements ExecutionContextAdapter<M> {
 
   private static final ExtensionTransactionFactory TRANSACTION_FACTORY = new ExtensionTransactionFactory();
 
@@ -43,7 +43,7 @@ public class DefaultOperationContext implements OperationContextAdapter {
   private final Optional<ConfigurationInstance> configuration;
   private final Map<String, Object> parameters;
   private final Map<String, Object> variables = new HashMap<>();
-  private final OperationModel operationModel;
+  private final M componentModel;
   private final Event event;
   private final MuleContext muleContext;
   private Optional<TransactionConfig> transactionConfig = null;
@@ -54,26 +54,26 @@ public class DefaultOperationContext implements OperationContextAdapter {
    *
    * @param configuration the {@link ConfigurationInstance} that the operation will use
    * @param parameters the parameters that the operation will use
-   * @param operationModel a {@link OperationModel} for the operation being executed
+   * @param componentModel the {@link ComponentModel} for the component being executed
    * @param event the current {@link Event}
    */
-  public DefaultOperationContext(ExtensionModel extensionModel,
+  public DefaultExecutionContext(ExtensionModel extensionModel,
                                  Optional<ConfigurationInstance> configuration,
                                  ResolverSetResult parameters,
-                                 OperationModel operationModel,
+                                 M componentModel,
                                  Event event,
                                  MuleContext muleContext) {
 
     this.extensionModel = extensionModel;
     this.configuration = configuration;
     this.event = event;
-    this.operationModel = operationModel;
+    this.componentModel = componentModel;
     this.parameters = new HashMap<>(parameters.asMap());
     this.muleContext = muleContext;
     transactionConfigSupplier = () -> {
       synchronized (this) {
         if (transactionConfig == null) {
-          transactionConfig = isTransactional(operationModel) ? Optional.of(buildTransactionConfig()) : empty();
+          transactionConfig = isTransactional(componentModel) ? Optional.of(buildTransactionConfig()) : empty();
 
           transactionConfigSupplier = () -> transactionConfig;
         }
@@ -176,8 +176,8 @@ public class DefaultOperationContext implements OperationContextAdapter {
    * {@inheritDoc}
    */
   @Override
-  public OperationModel getOperationModel() {
-    return operationModel;
+  public M getComponentModel() {
+    return componentModel;
   }
 
   /**
@@ -209,7 +209,7 @@ public class DefaultOperationContext implements OperationContextAdapter {
         getTypeSafeParameter(TRANSACTIONAL_ACTION_PARAMETER_NAME, OperationTransactionalAction.class);
     if (action == null) {
       throw new IllegalArgumentException(format("Operation '%s' from extension '%s' is transactional but no transactional action defined",
-                                                operationModel.getName(),
+                                                componentModel.getName(),
                                                 extensionModel.getName()));
     }
 

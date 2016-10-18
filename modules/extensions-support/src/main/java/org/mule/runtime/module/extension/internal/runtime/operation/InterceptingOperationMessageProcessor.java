@@ -26,7 +26,7 @@ import org.mule.runtime.extension.api.runtime.operation.InterceptingCallback;
 import org.mule.runtime.module.extension.internal.manager.ExtensionManagerAdapter;
 import org.mule.runtime.module.extension.internal.runtime.ExecutionMediator;
 import org.mule.runtime.module.extension.internal.runtime.InterceptingExecutionMediator;
-import org.mule.runtime.module.extension.internal.runtime.OperationContextAdapter;
+import org.mule.runtime.module.extension.internal.runtime.ExecutionContextAdapter;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
 
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
   }
 
   @Override
-  protected Event doProcess(org.mule.runtime.core.api.Event event, OperationContextAdapter operationContext)
+  protected Event doProcess(org.mule.runtime.core.api.Event event, ExecutionContextAdapter operationContext)
       throws MuleException {
     Event resultEvent = (Event) super.doProcess(event, operationContext);
     InterceptingCallback<?> interceptingCallback = getInterceptorCallback(operationContext);
@@ -85,7 +85,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
   }
 
   private MuleException onException(InterceptingCallback<?> interceptingCallback, Event event,
-                                    OperationContextAdapter operationContext, Exception exception) {
+                                    ExecutionContextAdapter operationContext, Exception exception) {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug(format("Intercepting operation '%s' got an exception while processing intercepted chain",
                           operationContext.getOperationModel().getName()),
@@ -109,7 +109,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
     return new MessagingException(event, exception, this);
   }
 
-  private void onSuccess(OperationContextAdapter operationContext, Event resultEvent,
+  private void onSuccess(ExecutionContextAdapter operationContext, Event resultEvent,
                          InterceptingCallback<?> interceptingCallback)
       throws MessagingException {
     LOGGER.debug("Intercepting operation '{}' success", operationContext.getOperationModel().getName());
@@ -122,7 +122,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
     }
   }
 
-  private void onComplete(InterceptingCallback<?> interceptingCallback, Event event, OperationContextAdapter operationContext)
+  private void onComplete(InterceptingCallback<?> interceptingCallback, Event event, ExecutionContextAdapter operationContext)
       throws MuleException {
     LOGGER.debug("Intercepting operation '{}' completed", operationContext.getOperationModel().getName());
     try {
@@ -134,7 +134,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
     }
   }
 
-  private InterceptingCallback<?> getInterceptorCallback(OperationContextAdapter operationContext) {
+  private InterceptingCallback<?> getInterceptorCallback(ExecutionContextAdapter operationContext) {
     InterceptingCallback<?> interceptingCallback = operationContext.getVariable(INTERCEPTING_CALLBACK_PARAM);
     if (interceptingCallback == null) {
       throw new IllegalStateException("Could not find callback for intercepting operation "
@@ -143,7 +143,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
     return interceptingCallback;
   }
 
-  private Event processNext(Event interceptedEvent, OperationContextAdapter operationContext) throws MuleException {
+  private Event processNext(Event interceptedEvent, ExecutionContextAdapter operationContext) throws MuleException {
     if (next == null) {
       return interceptedEvent;
     } else if (interceptedEvent == null) {

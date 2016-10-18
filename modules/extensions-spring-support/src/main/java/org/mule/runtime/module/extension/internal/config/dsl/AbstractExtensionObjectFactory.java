@@ -135,7 +135,7 @@ public abstract class AbstractExtensionObjectFactory<T> implements ObjectFactory
     return key.replaceAll(CHILD_ELEMENT_KEY_PREFIX, "").replaceAll(CHILD_ELEMENT_KEY_SUFFIX, "");
   }
 
-  private void checkParameterGroupExclusivenessForModel(EnrichableModel model, Set<String> resolverKeys)
+  protected void checkParameterGroupExclusivenessForModel(EnrichableModel model, Set<String> resolverKeys)
       throws ConfigurationException {
     Optional<List<ParameterGroup>> exclusiveGroups =
         model.getModelProperty(ParameterGroupModelProperty.class).map(mp -> mp.getExclusiveGroups());

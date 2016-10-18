@@ -8,7 +8,7 @@ package org.mule.runtime.module.extension.internal.introspection;
 
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getAnnotation;
-import org.mule.runtime.extension.api.annotation.ExclusiveOptionals;
+import org.mule.runtime.extension.api.annotation.param.ExclusiveOptionals;
 import org.mule.runtime.api.meta.model.EnrichableModel;
 import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.api.meta.model.declaration.fluent.ExtensionDeclaration;

@@ -6,13 +6,30 @@
  */
 package org.mule.runtime.module.extension.internal.util;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import static java.lang.String.format;
+import static java.lang.reflect.Modifier.isPublic;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang.ArrayUtils.isEmpty;
+import static org.mule.metadata.api.model.MetadataFormat.JAVA;
+import static org.mule.metadata.java.api.utils.JavaTypeUtils.getType;
+import static org.mule.runtime.api.meta.ExpressionSupport.SUPPORTED;
+import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.reflections.ReflectionUtils.getAllFields;
+import static org.reflections.ReflectionUtils.getAllSuperTypes;
+import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.reflections.ReflectionUtils.withName;
+import static org.springframework.core.ResolvableType.forType;
 import org.mule.metadata.api.ClassTypeLoader;
 import org.mule.metadata.api.builder.BaseTypeBuilder;
 import org.mule.metadata.api.model.AnyType;
 import org.mule.metadata.api.model.MetadataType;
+import org.mule.metadata.api.model.ObjectType;
 import org.mule.metadata.api.model.VoidType;
+import org.mule.metadata.java.api.utils.JavaTypeUtils;
+import org.mule.metadata.utils.MetadataTypeUtils;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.meta.NamedObject;
 import org.mule.runtime.api.meta.model.ComponentModel;
@@ -32,19 +49,22 @@ import org.mule.runtime.core.util.CollectionUtils;
 import org.mule.runtime.core.util.collection.ImmutableListCollector;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
+import org.mule.runtime.extension.api.annotation.Ignore;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
-import org.mule.runtime.extension.api.annotation.param.Ignore;
 import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
+import org.mule.runtime.extension.api.introspection.declaration.type.TypeUtils;
 import org.mule.runtime.extension.api.introspection.streaming.PagingProvider;
 import org.mule.runtime.extension.api.runtime.operation.InterceptingCallback;
-import org.mule.runtime.extension.api.runtime.operation.OperationResult;
+import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.source.Source;
 import org.mule.runtime.module.extension.internal.introspection.describer.MuleExtensionAnnotationParser;
 import org.mule.runtime.module.extension.internal.model.property.DeclaringMemberModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.ImplementingParameterModelProperty;
-import org.springframework.core.ResolvableType;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -74,7 +94,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang.ArrayUtils.isEmpty;
 import static org.mule.metadata.api.model.MetadataFormat.JAVA;
-import static org.mule.metadata.internal.utils.MetadataTypeUtils.isObjectType;
 import static org.mule.metadata.java.api.utils.JavaTypeUtils.getType;
 import static org.mule.runtime.api.meta.ExpressionSupport.SUPPORTED;
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
@@ -83,6 +102,7 @@ import static org.reflections.ReflectionUtils.getAllSuperTypes;
 import static org.reflections.ReflectionUtils.withAnnotation;
 import static org.reflections.ReflectionUtils.withName;
 import static org.springframework.core.ResolvableType.forType;
+import org.springframework.core.ResolvableType;
 
 /**
  * Set of utility operations to get insights about objects and their components
@@ -111,7 +131,7 @@ public final class IntrospectionUtils {
 
   /**
    * Returns a {@link MetadataType} representing the given {@link Method}'s return type. If the {@code method} returns an
-   * {@link OperationResult}, then it returns the type of the {@code Output} generic. If the {@link OperationResult} type is being
+   * {@link Result}, then it returns the type of the {@code Output} generic. If the {@link Result} type is being
    * used in its raw form, then an {@link AnyType} will be returned.
    *
    * @param method the {@link Method} being introspected
@@ -128,7 +148,7 @@ public final class IntrospectionUtils {
     }
 
     Type type = methodType.getType();
-    if (methodType.getRawClass().equals(OperationResult.class)) {
+    if (methodType.getRawClass().equals(Result.class)) {
       ResolvableType genericType = methodType.getGenerics()[0];
       if (genericType.getRawClass() != null) {
         type = genericType.getType();
@@ -141,11 +161,11 @@ public final class IntrospectionUtils {
   }
 
   /**
-   * Returns a {@link MetadataType} representing the {@link OperationResult#getAttributes()} that will be set after executing the
+   * Returns a {@link MetadataType} representing the {@link Result#getAttributes()} that will be set after executing the
    * given {@code method}.
    * <p>
-   * If the {@code method} returns a {@link OperationResult}, then it returns the type of the {@code Attributes} generic. In any
-   * other case (including raw uses of {@link OperationResult}) it will return a {@link VoidType}
+   * If the {@code method} returns a {@link Result}, then it returns the type of the {@code Attributes} generic. In any
+   * other case (including raw uses of {@link Result}) it will return a {@link VoidType}
    *
    * @param method the {@link Method} being introspected
    * @param typeLoader a {@link ClassTypeLoader} used to create the {@link MetadataType}
@@ -160,7 +180,7 @@ public final class IntrospectionUtils {
       methodType = unwrapGenericFromClass(InterceptingCallback.class, methodType, 0);
     }
 
-    if (methodType.getRawClass().equals(OperationResult.class)) {
+    if (methodType.getRawClass().equals(Result.class)) {
       ResolvableType genericType = methodType.getGenerics()[1];
       if (genericType.getRawClass() != null) {
         type = genericType.getType();
@@ -385,11 +405,21 @@ public final class IntrospectionUtils {
   }
 
   public static Collection<Method> getOperationMethods(Class<?> declaringClass) {
-    return getAllSuperTypes(declaringClass).stream()
-        .flatMap(type -> Stream.of(type.getDeclaredMethods()))
-        .filter(method -> isPublic(method.getModifiers()))
+    return getMethodsStream(declaringClass)
         .filter(method -> !method.isAnnotationPresent(Ignore.class))
         .collect(toCollection(LinkedHashSet::new));
+  }
+
+  public static Collection<Method> getMethodsAnnotatedWith(Class<?> declaringClass, Class<? extends Annotation> annotationType) {
+    return getMethodsStream(declaringClass)
+        .filter(method -> method.getAnnotation(annotationType) != null)
+        .collect(toCollection(LinkedHashSet::new));
+  }
+
+  private static Stream<Method> getMethodsStream(Class<?> declaringClass) {
+    return getAllSuperTypes(declaringClass).stream()
+        .flatMap(type -> Stream.of(type.getDeclaredMethods()))
+        .filter(method -> isPublic(method.getModifiers()));
   }
 
   public static List<Field> getAnnotatedFields(Class<?> clazz, Class<? extends Annotation> annotationType) {
@@ -497,7 +527,7 @@ public final class IntrospectionUtils {
    * @return a boolean indicating if the Parameter is considered as a multilevel {@link MetadataKeyId}
    */
   public static boolean isMultiLevelMetadataKeyId(Set<Class<? extends Annotation>> annotations, MetadataType parameterType) {
-    return annotations.contains(MetadataKeyId.class) && isObjectType(parameterType);
+    return annotations.contains(MetadataKeyId.class) && parameterType instanceof ObjectType;
   }
 
   /**

@@ -4,17 +4,18 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.extension.internal.runtime.executor;
+package org.mule.runtime.module.extension.internal.runtime.execution;
 
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.disposeIfNeeded;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.startIfNeeded;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.stopIfNeeded;
 import static org.slf4j.LoggerFactory.getLogger;
+import org.mule.runtime.api.meta.model.operation.OperationModel;
 import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
+import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 import org.mule.runtime.extension.api.runtime.operation.Interceptor;
-import org.mule.runtime.extension.api.runtime.operation.OperationContext;
 import org.mule.runtime.extension.api.runtime.operation.OperationExecutor;
 import org.mule.runtime.module.extension.internal.introspection.AbstractInterceptable;
 
@@ -50,8 +51,8 @@ public final class InterceptableOperationExecutorWrapper extends AbstractInterce
    * Directly delegates into {@link #delegate} {@inheritDoc}
    */
   @Override
-  public <T> T execute(OperationContext operationContext) throws Exception {
-    return delegate.execute(operationContext);
+  public <T> T execute(ExecutionContext<OperationModel> executionContext) throws Exception {
+    return delegate.execute(executionContext);
   }
 
   /**
