@@ -18,6 +18,7 @@ import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.processor.ProcessingStrategy;
 import org.mule.runtime.core.api.registry.RegistrationException;
+import org.mule.runtime.core.api.processor.factory.ProcessingStrategyFactory;
 import org.mule.runtime.core.construct.flow.DefaultFlowProcessingStrategy;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
@@ -50,8 +51,11 @@ public class FlowProcessingStrategyTestCase extends AbstractMuleTestCase {
   @Test
   public void fixedProcessingStrategyIsHonoured() throws Exception {
     ProcessingStrategy processingStrategy = mock(ProcessingStrategy.class);
+    ProcessingStrategyFactory processingStrategyFactory = mock(ProcessingStrategyFactory.class);
+    when(processingStrategyFactory.create()).thenReturn(processingStrategy);
     createFlow();
-    flow.setProcessingStrategy(processingStrategy);
+    flow.setProcessingStrategyFactory(processingStrategyFactory);
+    flow.initialise();
 
     assertThat(flow.getProcessingStrategy(), is(sameInstance(processingStrategy)));
   }
@@ -59,20 +63,28 @@ public class FlowProcessingStrategyTestCase extends AbstractMuleTestCase {
   @Test
   public void defaultProcessingStrategyInConfigIsHonoured() throws Exception {
     ProcessingStrategy processingStrategy = mock(ProcessingStrategy.class);
-    when(configuration.getDefaultProcessingStrategy()).thenReturn(processingStrategy);
+    ProcessingStrategyFactory processingStrategyFactory = mock(ProcessingStrategyFactory.class);
+    when(processingStrategyFactory.create()).thenReturn(processingStrategy);
+    when(configuration.getDefaultProcessingStrategyFactory()).thenReturn(processingStrategyFactory);
 
     createFlow();
+    flow.initialise();
     assertThat(flow.getProcessingStrategy(), is(sameInstance(processingStrategy)));
   }
 
   @Test
   public void fixedProcessingStrategyTakesPrecedenceOverConfig() throws Exception {
     ProcessingStrategy configProcessingStrategy = mock(ProcessingStrategy.class);
-    when(configuration.getDefaultProcessingStrategy()).thenReturn(configProcessingStrategy);
+    ProcessingStrategyFactory configProcessingStrategyFactory = mock(ProcessingStrategyFactory.class);
+    when(configProcessingStrategyFactory.create()).thenReturn(configProcessingStrategy);
+    when(configuration.getDefaultProcessingStrategyFactory()).thenReturn(configProcessingStrategyFactory);
 
     ProcessingStrategy processingStrategy = mock(ProcessingStrategy.class);
+    ProcessingStrategyFactory processingStrategyFactory = mock(ProcessingStrategyFactory.class);
+    when(processingStrategyFactory.create()).thenReturn(processingStrategy);
     createFlow();
-    flow.setProcessingStrategy(processingStrategy);
+    flow.setProcessingStrategyFactory(processingStrategyFactory);
+    flow.initialise();
 
     assertThat(flow.getProcessingStrategy(), is(sameInstance(processingStrategy)));
   }
