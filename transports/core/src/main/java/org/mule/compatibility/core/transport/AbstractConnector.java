@@ -37,10 +37,9 @@ import org.mule.compatibility.core.util.TransportObjectNameHelper;
 import org.mule.runtime.core.AbstractAnnotatedObject;
 import org.mule.runtime.core.MessageExchangePattern;
 import org.mule.runtime.core.api.DefaultMuleException;
-import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.Event;
+import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleException;
-import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.config.ThreadingProfile;
@@ -56,6 +55,7 @@ import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.lifecycle.LifecycleCallback;
 import org.mule.runtime.core.api.lifecycle.LifecycleException;
 import org.mule.runtime.core.api.lifecycle.LifecycleState;
+import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.registry.ServiceException;
 import org.mule.runtime.core.api.retry.RetryCallback;
@@ -1657,6 +1657,7 @@ public abstract class AbstractConnector extends AbstractAnnotatedObject implemen
   /**
    * Returns a work manager for message receivers.
    */
+  @Deprecated
   protected WorkManager getReceiverWorkManager() throws MuleException {
     return receiverWorkManager.get();
   }
@@ -1666,7 +1667,8 @@ public abstract class AbstractConnector extends AbstractAnnotatedObject implemen
    *
    * @throws MuleException in case of error
    */
-  protected WorkManager getDispatcherWorkManager() throws MuleException {
+  @Deprecated
+  protected WorkManager getDispatcherWorkManager() {
     return dispatcherWorkManager.get();
   }
 
@@ -1675,6 +1677,7 @@ public abstract class AbstractConnector extends AbstractAnnotatedObject implemen
    *
    * @throws MuleException in case of error
    */
+  @Deprecated
   protected WorkManager getRequesterWorkManager() throws MuleException {
     return requesterWorkManager.get();
   }
@@ -1683,6 +1686,7 @@ public abstract class AbstractConnector extends AbstractAnnotatedObject implemen
    * Returns a Scheduler service for periodic tasks, currently limited to internal use. Note: getScheduler() currently conflicts
    * with the same method in the Quartz transport
    */
+  @Deprecated
   public ScheduledExecutorService getScheduler() {
     return scheduler;
   }

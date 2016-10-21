@@ -10,6 +10,7 @@ import static reactor.core.publisher.Flux.from;
 
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.scheduler.SchedulerService;
 
 import java.util.List;
 import java.util.function.Function;
@@ -21,7 +22,7 @@ import org.reactivestreams.Publisher;
  */
 public interface ProcessingStrategy {
 
-  void configureProcessors(List<Processor> processors, org.mule.runtime.core.api.processor.StageNameSource nameSource,
+  void configureProcessors(List<Processor> processors, SchedulerService schedulerService,
                            MessageProcessorChainBuilder chainBuilder, MuleContext muleContext);
 
   default Function<Publisher<Event>, Publisher<Event>> onProcessor(Processor messageProcessor,

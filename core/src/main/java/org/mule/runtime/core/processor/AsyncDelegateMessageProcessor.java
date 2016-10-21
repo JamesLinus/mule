@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.processor;
 
+import static java.util.Collections.singletonList;
 import static org.mule.runtime.core.MessageExchangePattern.ONE_WAY;
 import static org.mule.runtime.core.api.Event.setCurrentEvent;
 import static org.mule.runtime.core.config.i18n.CoreMessages.asyncDoesNotSupportTransactions;
@@ -24,10 +25,11 @@ import org.mule.runtime.core.api.processor.MessageProcessorChainBuilder;
 import org.mule.runtime.core.api.processor.MessageProcessorPathElement;
 import org.mule.runtime.core.api.processor.ProcessingStrategy;
 import org.mule.runtime.core.api.processor.Processor;
-import org.mule.runtime.core.api.processor.StageNameSource;
 import org.mule.runtime.core.api.processor.StageNameSourceProvider;
 import org.mule.runtime.core.api.processor.factory.ProcessingStrategyFactory;
+import org.mule.runtime.core.api.registry.RegistrationException;
 import org.mule.runtime.core.api.routing.RoutingException;
+import org.mule.runtime.core.api.scheduler.SchedulerService;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.processor.chain.DefaultMessageProcessorChainBuilder;
 import org.mule.runtime.core.util.NotificationUtils;
@@ -82,17 +84,14 @@ public class AsyncDelegateMessageProcessor extends AbstractMessageProcessorOwner
 
     validateFlowConstruct();
 
-    StageNameSource nameSource = null;
-
-    if (name != null) {
-      nameSource = ((StageNameSourceProvider) flowConstruct).getAsyncStageNameSource(name);
-    } else {
-      nameSource = ((StageNameSourceProvider) flowConstruct).getAsyncStageNameSource();
-    }
-
     MessageProcessorChainBuilder builder = new DefaultMessageProcessorChainBuilder();
-    processingStrategy.configureProcessors(Collections.singletonList(delegate), nameSource, builder,
-                                           muleContext);
+    try {
+      processingStrategy.configureProcessors(singletonList(delegate),
+                                             muleContext.getRegistry().lookupObject(SchedulerService.class), builder,
+                                             muleContext);
+    } catch (RegistrationException e) {
+      throw new InitialisationException(e, this);
+    }
     target = builder.build();
     super.initialise();
   }

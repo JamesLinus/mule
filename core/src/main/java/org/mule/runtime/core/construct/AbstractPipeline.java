@@ -7,6 +7,7 @@
 package org.mule.runtime.core.construct;
 
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.collections.CollectionUtils.selectRejected;
 import static org.mule.runtime.core.context.notification.PipelineMessageNotification.PROCESS_COMPLETE;
 import static org.mule.runtime.core.context.notification.PipelineMessageNotification.PROCESS_END;
@@ -17,6 +18,7 @@ import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.GlobalNameableObject;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.construct.FlowConstructInvalidException;
@@ -35,6 +37,8 @@ import org.mule.runtime.core.api.processor.factory.DefaultFlowProcessingStrategy
 import org.mule.runtime.core.api.processor.factory.NonBlockingProcessingStrategyFactory;
 import org.mule.runtime.core.api.processor.factory.ProcessingStrategyFactory;
 import org.mule.runtime.core.api.processor.factory.SynchronousProcessingStrategyFactory;
+import org.mule.runtime.core.api.registry.RegistrationException;
+import org.mule.runtime.core.api.scheduler.SchedulerService;
 import org.mule.runtime.core.api.source.ClusterizableMessageSource;
 import org.mule.runtime.core.api.source.CompositeMessageSource;
 import org.mule.runtime.core.api.source.MessageSource;
@@ -70,6 +74,8 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
   protected MessageSource messageSource;
   protected Processor pipeline;
 
+  protected final SchedulerService schedulerService;
+
   protected List<Processor> messageProcessors = Collections.emptyList();
   private PathResolver flowMap;
 
@@ -93,6 +99,12 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
 
   public AbstractPipeline(String name, MuleContext muleContext) {
     super(name, muleContext);
+    try {
+      this.schedulerService = muleContext.getRegistry().lookupObject(SchedulerService.class);
+      requireNonNull(schedulerService);
+    } catch (RegistrationException e) {
+      throw new MuleRuntimeException(e);
+    }
   }
 
   /**
@@ -224,8 +236,7 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
   }
 
   protected void configureMessageProcessors(MessageProcessorChainBuilder builder) throws MuleException {
-    getProcessingStrategy().configureProcessors(getMessageProcessors(), () -> AbstractPipeline.this.getName(), builder,
-                                                muleContext);
+    getProcessingStrategy().configureProcessors(getMessageProcessors(), schedulerService, builder, muleContext);
   }
 
   @Override
