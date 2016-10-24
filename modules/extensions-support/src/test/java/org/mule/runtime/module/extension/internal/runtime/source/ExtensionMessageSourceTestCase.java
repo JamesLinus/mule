@@ -37,9 +37,6 @@ import static org.mule.test.module.extension.internal.util.ExtensionsTestUtils.m
 import static org.mule.test.module.extension.internal.util.ExtensionsTestUtils.mockSubTypes;
 import static org.mule.test.module.extension.internal.util.ExtensionsTestUtils.setRequires;
 import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.core.exception.MessagingException;
-import org.mule.runtime.core.execution.CompletionHandler;
-import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.config.ConfigurationModel;
 import org.mule.runtime.api.meta.model.source.SourceModel;
@@ -52,12 +49,14 @@ import org.mule.runtime.core.api.context.WorkManager;
 import org.mule.runtime.core.api.lifecycle.Disposable;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
-import org.mule.runtime.core.api.lifecycle.Lifecycle;
 import org.mule.runtime.core.api.lifecycle.Startable;
 import org.mule.runtime.core.api.lifecycle.Stoppable;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.retry.RetryPolicyTemplate;
+import org.mule.runtime.core.exception.MessagingException;
+import org.mule.runtime.core.execution.CompletionHandler;
+import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.core.execution.MessageProcessContext;
 import org.mule.runtime.core.execution.MessageProcessingManager;
 import org.mule.runtime.core.retry.RetryPolicyExhaustedException;
@@ -70,7 +69,6 @@ import org.mule.runtime.extension.api.runtime.ConfigurationProvider;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.source.Source;
 import org.mule.runtime.extension.api.runtime.source.SourceCallback;
-import org.mule.runtime.extension.api.runtime.source.SourceContext;
 import org.mule.runtime.module.extension.internal.manager.ExtensionManagerAdapter;
 import org.mule.runtime.module.extension.internal.model.property.MetadataResolverFactoryModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
@@ -90,13 +88,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase {
@@ -250,11 +244,9 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
     messageSource.start();
 
     messageSource.onException(new ConnectionException(ERROR_MESSAGE));
-    verify((Stoppable) source).stop();
+    verify(source).onStop();
     verify(workManager, never()).dispose();
-    verify((Disposable) source).dispose();
-    verify((Initialisable) source, times(2)).initialise();
-    verify((Startable) source, times(2)).start();
+    verify(source, times(2)).onStart(sourceCallback);
     handleMessage();
   }
 
@@ -263,11 +255,11 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
     messageSource.initialise();
     verify(source, never()).onStart(sourceCallback);
     verify(muleContext.getInjector()).inject(source);
-    verify((Initialisable) source).initialise();
+    verify(source).onStart(sourceCallback);
   }
 
   @Test
-  public void sourceShouldIsInstantiatedOnce() throws MuleException {
+  public void sourceIsInstantiatedOnce() throws MuleException {
     messageSource.doInitialise();
     messageSource.start();
     verify(sourceAdapterFactory, times(1)).createAdapter(of(configurationInstance), sourceCallbackFactory);
@@ -276,7 +268,7 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
   @Test
   public void initialiseFailsWithInitialisationException() throws Exception {
     Exception e = mock(InitialisationException.class);
-    doThrow(e).when(((Initialisable) source)).initialise();
+    doThrow(e).when(source).onStart(sourceCallback);
     expectedException.expect(is(sameInstance(e)));
 
     messageSource.initialise();
@@ -284,33 +276,33 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
 
   @Test
   public void failWithConnectionExceptionWhenStartingAndGetRetryPolicyExhausted() throws Exception {
-    doThrow(new RuntimeException(new ConnectionException(ERROR_MESSAGE))).when(source).start();
+    doThrow(new RuntimeException(new ConnectionException(ERROR_MESSAGE))).when(source).onStart(sourceCallback);
 
     final Throwable throwable = catchThrowable(messageSource::start);
     assertThat(throwable, is(instanceOf(MuleRuntimeException.class)));
     assertThat(throwable.getCause(), is(instanceOf(RetryPolicyExhaustedException.class)));
-    verify(source, times(3)).start();
+    verify(source, times(3)).onStart(sourceCallback);
   }
 
   @Test
   public void failWithNonConnectionExceptionWhenStartingAndGetRetryPolicyExhausted() throws Exception {
-    doThrow(new IOException(ERROR_MESSAGE)).when(source).start();
+    doThrow(new IOException(ERROR_MESSAGE)).when(source).onStart(sourceCallback);
 
     final Throwable throwable = catchThrowable(messageSource::start);
     assertThat(throwable, is(instanceOf(MuleRuntimeException.class)));
     assertThat(getThrowables(throwable), hasItemInArray(instanceOf(IOException.class)));
-    verify(source, times(1)).start();
+    verify(source, times(1)).onStart(sourceCallback);
   }
 
   @Test
   public void failWithConnectionExceptionWhenStartingAndGetsReconnected() throws Exception {
     doThrow(new RuntimeException(new ConnectionException(ERROR_MESSAGE)))
-        .doThrow(new RuntimeException(new ConnectionException(ERROR_MESSAGE))).doNothing().when(source).start();
+        .doThrow(new RuntimeException(new ConnectionException(ERROR_MESSAGE))).doNothing().when(source).onStart(sourceCallback);
 
     messageSource.initialise();
     messageSource.start();
-    verify(source, times(3)).start();
-    verify(source, times(2)).stop();
+    verify(source, times(3)).onStart(sourceCallback);
+    verify(source, times(2)).onStop();
   }
 
   @Test
@@ -319,8 +311,8 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
     messageSource.start();
     messageSource.onException(new ConnectionException(ERROR_MESSAGE));
 
-    verify(source, times(2)).start();
-    verify(source, times(1)).stop();
+    verify(source, times(2)).onStart(sourceCallback);
+    verify(source, times(1)).onStop();
   }
 
   @Test
@@ -329,8 +321,8 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
     messageSource.start();
     messageSource.onException(new RuntimeException(ERROR_MESSAGE));
 
-    verify(source, times(1)).start();
-    verify(source, times(1)).stop();
+    verify(source, times(1)).onStart(sourceCallback);
+    verify(source, times(1)).onStop();
   }
 
   @Test
@@ -379,7 +371,7 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
     mockExceptionEnricher(sourceModel, enricherFactory);
     mockExceptionEnricher(sourceModel, enricherFactory);
     ExtensionMessageSource messageSource = getNewExtensionMessageSourceInstance();
-    doThrow(new RuntimeException(ERROR_MESSAGE)).when(source).start();
+    doThrow(new RuntimeException(ERROR_MESSAGE)).when(source).onStart(sourceCallback);
     Throwable t = catchThrowable(messageSource::start);
 
     assertThat(ExceptionUtils.containsType(t, ConnectionException.class), is(true));
@@ -394,7 +386,7 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
     when(enricherFactory.createEnricher()).thenReturn(exceptionEnricher);
     mockExceptionEnricher(extensionModel, enricherFactory);
     ExtensionMessageSource messageSource = getNewExtensionMessageSourceInstance();
-    doThrow(new RuntimeException(ERROR_MESSAGE)).when(source).start();
+    doThrow(new RuntimeException(ERROR_MESSAGE)).when(source).onStart(sourceCallback);
     Throwable t = catchThrowable(messageSource::start);
 
     assertThat(t.getMessage(), containsString(enrichedErrorMessage));

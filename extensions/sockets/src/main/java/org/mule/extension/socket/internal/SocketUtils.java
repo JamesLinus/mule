@@ -17,6 +17,7 @@ import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.core.api.serialization.ObjectSerializer;
+import org.mule.runtime.extension.api.runtime.operation.Result;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,6 @@ public final class SocketUtils {
 
   }
 
-  public static final String DEFAULT_ENCODING = "UTF-8";
   private static final String SOCKET_COULD_NOT_BE_CREATED = "%s Socket could not be created correctly";
 
   /**
@@ -74,8 +74,8 @@ public final class SocketUtils {
     return connection.validate();
   }
 
-  public static Message createMuleMessage(InputStream content, SocketAttributes attributes) {
-    return Message.builder().payload(content).attributes(attributes).build();
+  public static Result<InputStream, SocketAttributes> createResult(InputStream content, SocketAttributes attributes) {
+    return Result.<InputStream, SocketAttributes>builder().output(content).attributes(attributes).build();
   }
 
   /**

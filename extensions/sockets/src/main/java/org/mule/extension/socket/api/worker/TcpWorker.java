@@ -7,7 +7,7 @@
 package org.mule.extension.socket.api.worker;
 
 import static java.lang.String.format;
-import static org.mule.extension.socket.internal.SocketUtils.createMuleMessage;
+import static org.mule.extension.socket.internal.SocketUtils.createResult;
 
 import org.mule.extension.socket.api.ImmutableSocketAttributes;
 import org.mule.extension.socket.api.connection.tcp.TcpListenerConnection;
@@ -20,6 +20,7 @@ import org.mule.runtime.api.message.MuleEvent;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.extension.api.runtime.MessageHandler;
 import org.mule.runtime.extension.api.runtime.source.Source;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -34,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Only one worker will be created per each new TCP connection accepted by the
- * {@link TcpListenerConnection#listen(MuleContext, MessageHandler)}, This class is responsible for reading from that connection
+ * {@link TcpListenerConnection#listen(SourceCallback)}, This class is responsible for reading from that connection
  * is closed by the sender, or {@link Source} is stopped.
  *
  * @since 4.0
@@ -51,9 +52,9 @@ public final class TcpWorker extends SocketWorker {
   private boolean dataInWorkFinished = false;
   private AtomicBoolean moreMessages = new AtomicBoolean(true); // can be set on completion's callback
 
-  public TcpWorker(Socket socket, TcpProtocol protocol, MessageHandler<InputStream, SocketAttributes> messageHandler)
+  public TcpWorker(Socket socket, TcpProtocol protocol, SourceCallback<InputStream, SocketAttributes> callback)
       throws IOException {
-    super(messageHandler);
+    super(callback);
     this.socket = socket;
     this.protocol = protocol;
 
@@ -141,7 +142,7 @@ public final class TcpWorker extends SocketWorker {
       }
 
       SocketAttributes attributes = new ImmutableSocketAttributes(socket);
-      messageHandler.handle(createMuleMessage(content, attributes), new CompletionHandler<MuleEvent, Exception, MuleEvent>() {
+      callback.handle(createResult(content, attributes), new CompletionHandler<MuleEvent, Exception, MuleEvent>() {
 
         @Override
         public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback) {

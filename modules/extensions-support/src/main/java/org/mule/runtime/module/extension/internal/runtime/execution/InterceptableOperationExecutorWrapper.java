@@ -51,7 +51,7 @@ public final class InterceptableOperationExecutorWrapper extends AbstractInterce
    * Directly delegates into {@link #delegate} {@inheritDoc}
    */
   @Override
-  public <T> T execute(ExecutionContext<OperationModel> executionContext) throws Exception {
+  public Object execute(ExecutionContext<OperationModel> executionContext) throws Exception {
     return delegate.execute(executionContext);
   }
 

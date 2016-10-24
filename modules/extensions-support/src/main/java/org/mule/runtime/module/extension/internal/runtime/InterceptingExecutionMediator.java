@@ -8,6 +8,7 @@ package org.mule.runtime.module.extension.internal.runtime;
 
 import static java.lang.String.format;
 import static org.mule.runtime.module.extension.internal.ExtensionProperties.INTERCEPTING_CALLBACK_PARAM;
+import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getComponentModelTypeName;
 import org.mule.runtime.extension.api.runtime.operation.InterceptingCallback;
 import org.mule.runtime.extension.api.runtime.operation.OperationExecutor;
 import org.mule.runtime.module.extension.internal.ExtensionProperties;
@@ -41,8 +42,9 @@ public final class InterceptingExecutionMediator implements ExecutionMediator {
   public Object execute(OperationExecutor executor, ExecutionContextAdapter context) throws Throwable {
     Object resultValue = intercepted.execute(executor, context);
     if (!(resultValue instanceof InterceptingCallback)) {
-      throw new IllegalStateException(format("operation '%s' was expected to return a '%s' but a '%s' was found instead",
-                                             context.getOperationModel().getName(), InterceptingCallback.class.getSimpleName(),
+      throw new IllegalStateException(format("%s '%s' was expected to return a '%s' but a '%s' was found instead",
+                                             getComponentModelTypeName(context.getComponentModel()),
+                                             context.getComponentModel().getName(), InterceptingCallback.class.getSimpleName(),
                                              resultValue));
     }
 

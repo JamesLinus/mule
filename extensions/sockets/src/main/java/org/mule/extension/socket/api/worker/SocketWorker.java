@@ -8,7 +8,7 @@ package org.mule.extension.socket.api.worker;
 
 import org.mule.extension.socket.api.SocketAttributes;
 import org.mule.runtime.core.api.lifecycle.Disposable;
-import org.mule.runtime.extension.api.runtime.MessageHandler;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 
 import java.io.InputStream;
 
@@ -16,11 +16,11 @@ import javax.resource.spi.work.Work;
 
 public abstract class SocketWorker implements Disposable, Work {
 
-  protected final MessageHandler<InputStream, SocketAttributes> messageHandler;
+  protected final SourceCallback<InputStream, SocketAttributes> callback;
   protected String encoding;
 
-  protected SocketWorker(MessageHandler<InputStream, SocketAttributes> messageHandler) {
-    this.messageHandler = messageHandler;
+  protected SocketWorker(SourceCallback<InputStream, SocketAttributes> callback) {
+    this.callback = callback;
   }
 
   public void setEncoding(String encoding) {

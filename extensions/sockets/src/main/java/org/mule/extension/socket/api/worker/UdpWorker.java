@@ -8,7 +8,7 @@ package org.mule.extension.socket.api.worker;
 
 import static java.lang.String.format;
 import static java.util.Arrays.copyOf;
-import static org.mule.extension.socket.internal.SocketUtils.createMuleMessage;
+import static org.mule.extension.socket.internal.SocketUtils.createResult;
 import static org.mule.extension.socket.internal.SocketUtils.createPacket;
 import static org.mule.extension.socket.internal.SocketUtils.getUdpAllowedByteArray;
 
@@ -19,6 +19,7 @@ import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.api.message.MuleEvent;
 import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.extension.api.runtime.MessageHandler;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,9 +42,11 @@ public final class UdpWorker extends SocketWorker {
   private final DatagramPacket packet;
   private final ObjectSerializer objectSerializer;
 
-  public UdpWorker(DatagramSocket socket, DatagramPacket packet, ObjectSerializer objectSerializer,
-                   MessageHandler<InputStream, SocketAttributes> messageHandler) {
-    super(messageHandler);
+  public UdpWorker(DatagramSocket socket,
+                   DatagramPacket packet,
+                   ObjectSerializer objectSerializer,
+                   SourceCallback<InputStream, SocketAttributes> callback) {
+    super(callback);
     this.socket = socket;
     this.packet = packet;
     this.objectSerializer = objectSerializer;
@@ -53,7 +56,7 @@ public final class UdpWorker extends SocketWorker {
   public void run() {
     SocketAttributes attributes = new ImmutableSocketAttributes(packet);
     InputStream content = new ByteArrayInputStream(copyOf(packet.getData(), packet.getLength()));
-    messageHandler.handle(createMuleMessage(content, attributes), new CompletionHandler<MuleEvent, Exception, MuleEvent>() {
+    callback.handle(createResult(content, attributes), new CompletionHandler<MuleEvent, Exception, MuleEvent>() {
 
       @Override
       public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback) {

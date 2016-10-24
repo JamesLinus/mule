@@ -10,6 +10,7 @@ import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static org.mule.runtime.core.execution.TransactionalExecutionTemplate.createTransactionalExecutionTemplate;
 import org.mule.runtime.api.connection.ConnectionProvider;
+import org.mule.runtime.api.meta.model.ComponentModel;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.operation.OperationModel;
 import org.mule.runtime.core.api.MuleRuntimeException;
@@ -209,9 +210,9 @@ public final class DefaultExecutionMediator implements ExecutionMediator {
     });
   }
 
-  private <T> ExecutionTemplate<T> getExecutionTemplate(ExecutionContextAdapter context) {
+  private <T> ExecutionTemplate<T> getExecutionTemplate(ExecutionContextAdapter<OperationModel> context) {
     return context.getTransactionConfig()
-        .map(txConfig -> (ExecutionTemplate<T>) createTransactionalExecutionTemplate(context.getMuleContext(), txConfig))
+        .map(txConfig -> ((ExecutionTemplate<T>) createTransactionalExecutionTemplate(context.getMuleContext(), txConfig)))
         .orElse((ExecutionTemplate<T>) defaultExecutionTemplate);
   }
 
@@ -230,7 +231,7 @@ public final class DefaultExecutionMediator implements ExecutionMediator {
     return connectionManager.getDefaultRetryPolicyTemplate();
   }
 
-  private MutableConfigurationStats getMutableConfigurationStats(ExecutionContext context) {
+  private MutableConfigurationStats getMutableConfigurationStats(ExecutionContext<ComponentModel> context) {
     ConfigurationStats stats = context.getConfiguration().map(ConfigurationInstance::getStatistics).orElse(null);
     return stats instanceof MutableConfigurationStats ? (MutableConfigurationStats) stats : null;
   }
@@ -252,7 +253,7 @@ public final class DefaultExecutionMediator implements ExecutionMediator {
 
   private class OperationRetryCallBack implements RetryCallback {
 
-    private final ExecutionContextAdapter context;
+    private final ExecutionContextAdapter<OperationModel> context;
     private final List<Interceptor> interceptorList;
     private OperationExecutor operationExecutor;
     private OperationExecutionResult operationExecutionResult;

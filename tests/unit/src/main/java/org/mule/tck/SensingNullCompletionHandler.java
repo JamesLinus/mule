@@ -11,7 +11,7 @@ import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.util.concurrent.Latch;
 
-public class SensingNullCompletionHandler extends BlockingCompletionHandler<Event, MessagingException, Void> {
+public class SensingNullCompletionHandler extends BlockingCompletionHandler<Event, MessagingException> {
 
   public Event event;
   public Exception exception;

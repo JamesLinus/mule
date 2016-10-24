@@ -14,6 +14,7 @@ import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
 import org.mule.runtime.extension.api.runtime.source.Source;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 import org.mule.tck.testmodels.fruit.Apple;
 
 @Alias("harvest-apples")
@@ -30,12 +31,11 @@ public class HarvestApplesSource extends Source<Apple, Attributes> {
   private String key;
 
   @Override
-  public void start() {
+  public void onStart(SourceCallback<Apple, Attributes> sourceCallback) throws Exception {
 
   }
 
   @Override
-  public void stop() {
-
+  public void onStop() {
   }
 }

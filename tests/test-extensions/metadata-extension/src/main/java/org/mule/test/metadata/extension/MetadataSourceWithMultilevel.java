@@ -14,6 +14,7 @@ import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
 import org.mule.runtime.extension.api.runtime.source.Source;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 import org.mule.tck.message.StringAttributes;
 import org.mule.test.metadata.extension.resolver.TestMultiLevelKeyResolver;
 import org.mule.test.metadata.extension.resolver.TestOutputAnyTypeResolver;
@@ -31,7 +32,7 @@ public class MetadataSourceWithMultilevel extends Source<Map<String, Object>, St
   public LocationKey key;
 
   @Override
-  public void start() {
+  public void onStart(SourceCallback<Map<String, Object>, StringAttributes> sourceCallback) throws Exception {
     boolean injectedProperly = key != null && key.getCity().equals(BUENOS_AIRES) && key.getCountry().equals(ARGENTINA)
         && key.getContinent().equals(AMERICA);
 
@@ -41,7 +42,7 @@ public class MetadataSourceWithMultilevel extends Source<Map<String, Object>, St
   }
 
   @Override
-  public void stop() {
+  public void onStop() {
 
   }
 }

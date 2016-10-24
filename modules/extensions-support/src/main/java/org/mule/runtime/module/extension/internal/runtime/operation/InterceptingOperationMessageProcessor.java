@@ -62,7 +62,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
     try {
       if (interceptingCallback.shouldProcessNext()) {
         LOGGER.debug("Intercepting operation '{}' will proceed to execute intercepted chain",
-                     operationContext.getOperationModel().getName());
+                     operationContext.getComponentModel().getName());
 
         try {
           resultEvent = processNext(resultEvent, operationContext);
@@ -73,7 +73,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
         onSuccess(operationContext, resultEvent, interceptingCallback);
       } else {
         LOGGER.debug("Intercepting operation '{}' skipped processing of intercepted chain",
-                     operationContext.getOperationModel().getName());
+                     operationContext.getComponentModel().getName());
       }
     } finally {
       operationContext.removeVariable(INTERCEPTING_CALLBACK_PARAM);
@@ -88,7 +88,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
                                     ExecutionContextAdapter operationContext, Exception exception) {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug(format("Intercepting operation '%s' got an exception while processing intercepted chain",
-                          operationContext.getOperationModel().getName()),
+                          operationContext.getComponentModel().getName()),
                    exception);
     }
     try {
@@ -97,7 +97,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
       if (LOGGER.isDebugEnabled()) {
         LOGGER
             .debug(format("Intercepting operation '%s' got an error while processing exception on callback. Original exception will be thrown back to the flow",
-                          operationContext.getOperationModel().getName()),
+                          operationContext.getComponentModel().getName()),
                    e);
       }
     }
@@ -112,33 +112,33 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
   private void onSuccess(ExecutionContextAdapter operationContext, Event resultEvent,
                          InterceptingCallback<?> interceptingCallback)
       throws MessagingException {
-    LOGGER.debug("Intercepting operation '{}' success", operationContext.getOperationModel().getName());
+    LOGGER.debug("Intercepting operation '{}' success", operationContext.getComponentModel().getName());
     try {
       interceptingCallback.onSuccess(resultEvent.getMessage());
     } catch (Exception e) {
       throw new MessagingException(createStaticMessage(format("Intercepting operation '%s' executed intercepted chain but failed to process the obtained response",
-                                                              operationContext.getOperationModel().getName())),
+                                                              operationContext.getComponentModel().getName())),
                                    resultEvent, e, this);
     }
   }
 
   private void onComplete(InterceptingCallback<?> interceptingCallback, Event event, ExecutionContextAdapter operationContext)
       throws MuleException {
-    LOGGER.debug("Intercepting operation '{}' completed", operationContext.getOperationModel().getName());
+    LOGGER.debug("Intercepting operation '{}' completed", operationContext.getComponentModel().getName());
     try {
       interceptingCallback.onComplete();
     } catch (Exception e) {
       throw new MessagingException(createStaticMessage(format("Intercepting operation '%s' failed to notify completion",
-                                                              operationContext.getOperationModel().getName())),
+                                                              operationContext.getComponentModel().getName())),
                                    event, e, this);
     }
   }
 
-  private InterceptingCallback<?> getInterceptorCallback(ExecutionContextAdapter operationContext) {
+  private InterceptingCallback<?> getInterceptorCallback(ExecutionContextAdapter<OperationModel> operationContext) {
     InterceptingCallback<?> interceptingCallback = operationContext.getVariable(INTERCEPTING_CALLBACK_PARAM);
     if (interceptingCallback == null) {
       throw new IllegalStateException("Could not find callback for intercepting operation "
-          + operationContext.getOperationModel().getName());
+          + operationContext.getComponentModel().getName());
     }
     return interceptingCallback;
   }
@@ -159,7 +159,7 @@ public class InterceptingOperationMessageProcessor extends OperationMessageProce
       Event resultEvent = next.process(interceptedEvent);
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug(format("Intercepting operation '%s' executed intercepted chain and got the following event back: ",
-                            operationContext.getOperationModel().getName(), resultEvent));
+                            operationContext.getComponentModel().getName(), resultEvent));
       }
 
       return resultEvent;

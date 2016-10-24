@@ -11,6 +11,7 @@ import static org.mule.runtime.core.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.module.extension.internal.ExtensionProperties.ENCODING_PARAMETER_NAME;
 import static org.mule.runtime.module.extension.internal.ExtensionProperties.MIME_TYPE_PARAMETER_NAME;
 import org.mule.runtime.api.message.Message;
+import org.mule.runtime.api.meta.model.ComponentModel;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.MuleContext;
@@ -59,7 +60,7 @@ abstract class AbstractReturnDelegate implements ReturnDelegate {
    * @param operationContext
    * @return
    */
-  private MediaType resolveMediaType(Object value, ExecutionContextAdapter operationContext) {
+  private MediaType resolveMediaType(Object value, ExecutionContextAdapter<ComponentModel> operationContext) {
     Charset existingEncoding = getDefaultEncoding(muleContext);
     MediaType mediaType = null;
     if (value instanceof Result) {

@@ -9,6 +9,7 @@ package org.mule.test.vegan.extension;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.runtime.source.Source;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 import org.mule.tck.message.StringAttributes;
 import org.mule.tck.testmodels.fruit.Peach;
 
@@ -20,13 +21,13 @@ public class HarvestPeachesSource extends Source<String, StringAttributes> {
   @Connection
   Peach connection;
 
+
   @Override
-  public void start() throws Exception {
+  public void onStart(SourceCallback<String, StringAttributes> sourceCallback) throws Exception {
     isConnected = connection != null;
   }
 
   @Override
-  public void stop() throws Exception {
-
+  public void onStop() {
   }
 }

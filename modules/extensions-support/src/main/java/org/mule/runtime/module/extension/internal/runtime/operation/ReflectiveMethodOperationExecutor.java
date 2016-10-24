@@ -38,7 +38,7 @@ public final class ReflectiveMethodOperationExecutor implements OperationExecuto
   private final ReflectiveMethodComponentExecutor<OperationModel> executor;
   private MuleContext muleContext;
 
-  ReflectiveMethodOperationExecutor(OperationModel operationModel, Method operationMethod, Object operationInstance) {
+  public ReflectiveMethodOperationExecutor(OperationModel operationModel, Method operationMethod, Object operationInstance) {
     executor = new ReflectiveMethodComponentExecutor<>(operationModel, operationMethod, operationInstance);
   }
 

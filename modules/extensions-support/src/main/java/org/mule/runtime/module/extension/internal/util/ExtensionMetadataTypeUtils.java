@@ -7,8 +7,8 @@
 package org.mule.runtime.module.extension.internal.util;
 
 import static org.mule.metadata.api.model.MetadataFormat.JAVA;
+import static org.mule.metadata.internal.utils.MetadataTypeUtils.getTypeId;
 import static org.mule.metadata.java.api.utils.JavaTypeUtils.getType;
-import static org.mule.metadata.utils.MetadataTypeUtils.getTypeId;
 import static org.mule.runtime.extension.api.util.NameUtils.getAliasName;
 import org.mule.metadata.api.model.MetadataType;
 import org.mule.metadata.java.api.annotation.ClassInformationAnnotation;

@@ -24,7 +24,9 @@ import org.mule.runtime.core.api.construct.FlowConstructAware;
 import org.mule.runtime.core.api.context.WorkManager;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
+import org.mule.runtime.extension.api.annotation.source.EmitsResponse;
 import org.mule.runtime.extension.api.runtime.source.Source;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 4.0
  */
+@EmitsResponse
 public final class SocketListener extends Source<InputStream, SocketAttributes> implements FlowConstructAware {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SocketListener.class);
@@ -63,13 +66,13 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
   private ListenerConfig config;
 
   private AtomicBoolean stopRequested = new AtomicBoolean(false);
+  private SourceCallback<InputStream, SocketAttributes> sourceCallback;
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void start() throws Exception {
-
+  public void onStart(SourceCallback<InputStream, SocketAttributes> sourceCallback) throws Exception {
     // TODO MULE-9898
     ThreadingProfile threadingProfile =
         config.getThreadingProfile() == null ? muleContext.getDefaultThreadingProfile() : config.getThreadingProfile();
@@ -80,6 +83,8 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
     executorService =
         newSingleThreadExecutor(r -> new Thread(r,
                                                 format("%s%s.socket.listener", getPrefix(muleContext), flowConstruct.getName())));
+
+    this.sourceCallback = sourceCallback;
     stopRequested.set(false);
     executorService.execute(this::listen);
   }
@@ -138,7 +143,7 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
       }
 
       if (e instanceof MessagingException || e instanceof ConnectionException) {
-        sourceContext.getExceptionCallback().onException(e);
+        sourceCallback.onSourceException(e);
       }
     }
   }
@@ -147,10 +152,14 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
    * {@inheritDoc}
    */
   @Override
-  public void stop() {
-    stopRequested.set(true);
-    workManager.dispose();
-    shutdownExecutor();
+  public void onStop() {
+    try {
+      stopRequested.set(true);
+      workManager.dispose();
+      shutdownExecutor();
+    } finally {
+      sourceCallback = null;
+    }
   }
 
   /**
@@ -194,12 +203,12 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
       }
 
       try {
-        SocketWorker worker = connection.listen(sourceContext.getMessageHandler());
+        SocketWorker worker = connection.listen(sourceCallback);
         worker.setEncoding(config.getDefaultEncoding());
         workManager.scheduleWork(worker, WorkManager.INDEFINITE, null, socketWorkListener);
       } catch (ConnectionException e) {
         if (!isRequestedToStop()) {
-          sourceContext.getExceptionCallback().onException(e);
+          sourceCallback.onSourceException(e);
         }
       } catch (Exception e) {
         if (isRequestedToStop()) {

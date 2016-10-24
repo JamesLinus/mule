@@ -10,6 +10,7 @@ import org.mule.runtime.api.message.Attributes;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.runtime.source.Source;
+import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 
 @Alias("pet-source")
 public class PetStoreSource extends Source<String, Attributes> {
@@ -18,12 +19,10 @@ public class PetStoreSource extends Source<String, Attributes> {
   private ExclusivePetBreeder breeder;
 
   @Override
-  public void start() throws Exception {
-
+  public void onStart(SourceCallback<String, Attributes> sourceCallback) throws Exception {
   }
 
   @Override
-  public void stop() throws Exception {
-
+  public void onStop() {
   }
 }
