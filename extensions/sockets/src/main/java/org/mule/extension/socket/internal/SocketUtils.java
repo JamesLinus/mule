@@ -40,21 +40,14 @@ public final class SocketUtils {
    */
   public static byte[] getUdpAllowedByteArray(Object data, String encoding, ObjectSerializer objectSerializer)
       throws IOException {
-    return getByteArray(data, true, false, encoding, objectSerializer);
+    return getByteArray(data, false, encoding, objectSerializer);
   }
 
-  public static byte[] getByteArray(Object data, boolean payloadOnly, boolean streamingIsAllowed, String encoding,
+  public static byte[] getByteArray(Object data, boolean streamingIsAllowed, String encoding,
                                     ObjectSerializer objectSerializer)
       throws IOException {
     if (data instanceof InputStream && !streamingIsAllowed) {
       throw new IOException("Streaming is not allowed with this configuration");
-    } else if (data instanceof Message) {
-      if (payloadOnly) {
-        return getByteArray(((Message) data).getPayload().getValue(), payloadOnly, streamingIsAllowed, encoding,
-                            objectSerializer);
-      } else {
-        return objectSerializer.serialize(data);
-      }
     } else if (data instanceof byte[]) {
       return (byte[]) data;
     } else if (data instanceof String) {

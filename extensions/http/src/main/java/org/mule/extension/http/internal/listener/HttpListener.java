@@ -9,10 +9,10 @@ package org.mule.extension.http.internal.listener;
 import static org.mule.extension.http.internal.HttpConnector.CONFIGURATION_OVERRIDES;
 import static org.mule.extension.http.internal.HttpConnector.RESPONSE_SETTINGS;
 import static org.mule.extension.http.internal.listener.HttpRequestToResult.transform;
+import static org.mule.runtime.core.api.Event.setCurrentEvent;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.startIfNeeded;
 import static org.mule.runtime.core.exception.Errors.ComponentIdentifiers.SECURITY;
-import static org.mule.runtime.core.api.Event.setCurrentEvent;
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED;
 import static org.mule.runtime.module.http.api.HttpConstants.HttpStatus.BAD_REQUEST;
@@ -25,8 +25,6 @@ import org.mule.extension.http.api.HttpStreamingType;
 import org.mule.extension.http.api.listener.builder.HttpListenerResponseBuilder;
 import org.mule.extension.http.internal.HttpMetadataResolver;
 import org.mule.extension.http.internal.listener.server.HttpListenerConfig;
-import org.mule.runtime.core.execution.CompletionHandler;
-import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.api.message.Error;
 import org.mule.runtime.api.message.ErrorType;
 import org.mule.runtime.api.message.Message;
@@ -39,6 +37,8 @@ import org.mule.runtime.core.config.ExceptionHelper;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.exception.ErrorTypeRepository;
 import org.mule.runtime.core.exception.MessagingException;
+import org.mule.runtime.core.execution.CompletionHandler;
+import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
@@ -52,6 +52,7 @@ import org.mule.runtime.extension.api.annotation.source.OnSuccess;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.source.Source;
 import org.mule.runtime.extension.api.runtime.source.SourceCallback;
+import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 import org.mule.runtime.module.http.api.HttpConstants;
 import org.mule.runtime.module.http.internal.HttpParser;
 import org.mule.runtime.module.http.internal.domain.ByteArrayHttpEntity;
@@ -153,8 +154,6 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
   @Placement(group = ERROR_RESPONSE_SETTINGS)
   private HttpListenerResponseBuilder errorResponseBuilder;
 
-  private SourceCallback<Object, HttpRequestAttributes> sourceCallback;
-
   private MethodRequestMatcher methodRequestMatcher = AcceptsAllMethodsRequestMatcher.instance();
   private HttpThrottlingHeadersMapBuilder httpThrottlingHeadersMapBuilder = new HttpThrottlingHeadersMapBuilder();
   private String[] parsedAllowedMethods;
@@ -192,25 +191,20 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     parseRequest = config.resolveParseRequest(parseRequest);
     try {
       requestHandlerManager =
-          server.addRequestHandler(new ListenerRequestMatcher(methodRequestMatcher, path), getRequestHandler());
+          server.addRequestHandler(new ListenerRequestMatcher(methodRequestMatcher, path), getRequestHandler(sourceCallback));
     } catch (Exception e) {
       throw new MuleRuntimeException(e);
     }
     ErrorTypeRepository errorTypeRepository = muleContext.getErrorTypeRepository();
     knownErrors = Lists.newArrayList(errorTypeRepository.lookupErrorType(SECURITY));
     requestHandlerManager.start();
-    this.sourceCallback = sourceCallback;
   }
 
   @Override
   public void onStop() {
-    try {
-      if (requestHandlerManager != null) {
-        requestHandlerManager.stop();
-        requestHandlerManager.dispose();
-      }
-    } finally {
-      sourceCallback = null;
+    if (requestHandlerManager != null) {
+      requestHandlerManager.stop();
+      requestHandlerManager.dispose();
     }
   }
 
@@ -222,7 +216,7 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     //responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
   }
 
-  private RequestHandler getRequestHandler() {
+  private RequestHandler getRequestHandler(SourceCallback<Object, HttpRequestAttributes> sourceCallback) {
     return new RequestHandler() {
 
       @Override
@@ -233,57 +227,59 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
           final boolean supportStreaming = supportsTransferEncoding(httpVersion);
           CompletionHandler<Event, Exception> completionHandler = new CompletionHandler<Event, Exception>() {
 
-                @Override
-                public void onCompletion(Event result, ExceptionCallback<Throwable> exceptionCallback) {
-                  final HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
-                  final HttpResponse httpResponse =
-                      buildResponse(result, responseBuilder, supportStreaming, exceptionCallback);
-                  responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
+            @Override
+            public void onCompletion(Event result, ExceptionCallback<Throwable> exceptionCallback) {
+              final HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
+              final HttpResponse httpResponse =
+                  buildResponse(result, responseBuilder, supportStreaming, exceptionCallback);
+              responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
+            }
+
+            @Override
+            public void onFailure(Exception exception) {
+              // For now let's use the HTTP transport exception mapping since makes sense and the gateway depends on it.
+              MessagingException messagingException = (MessagingException) exception;
+              Event event = messagingException.getEvent();
+              final HttpResponseBuilder failureResponseBuilder;
+              Event exceptionEvent;
+              if (hasCustomResponse(messagingException.getEvent().getError())) {
+                Message errorMessage = messagingException.getEvent().getError().get().getErrorMessage();
+                checkArgument(errorMessage.getAttributes() instanceof HttpResponseAttributes,
+                              "Error message must be HTTP compliant.");
+                HttpResponseAttributes attributes = (HttpResponseAttributes) errorMessage.getAttributes();
+                failureResponseBuilder = new HttpResponseBuilder()
+                    .setStatusCode(attributes.getStatusCode())
+                    .setReasonPhrase(attributes.getReasonPhrase());
+                attributes.getHeaders().forEach(failureResponseBuilder::addHeader);
+
+                if (errorMessage.getPayload().getValue() == null) {
+                  errorMessage = Message.builder(errorMessage).payload(messagingException.getMessage()).build();
                 }
 
-                @Override
-                public void onFailure(Exception exception) {
-                  // For now let's use the HTTP transport exception mapping since makes sense and the gateway depends on it.
-                  MessagingException messagingException = (MessagingException) exception;
-                  Event event = messagingException.getEvent();
-                  final HttpResponseBuilder failureResponseBuilder;
-                  Event exceptionEvent;
-                  if (hasCustomResponse(messagingException.getEvent().getError())) {
-                    Message errorMessage = messagingException.getEvent().getError().get().getErrorMessage();
-                    checkArgument(errorMessage.getAttributes() instanceof HttpResponseAttributes,
-                                  "Error message must be HTTP compliant.");
-                    HttpResponseAttributes attributes = (HttpResponseAttributes) errorMessage.getAttributes();
-                    failureResponseBuilder = new HttpResponseBuilder()
-                        .setStatusCode(attributes.getStatusCode())
-                        .setReasonPhrase(attributes.getReasonPhrase());
-                    attributes.getHeaders().forEach(failureResponseBuilder::addHeader);
+                exceptionEvent = Event.builder(event).message((InternalMessage) errorMessage).build();
+              } else {
+                failureResponseBuilder = createDefaultFailureResponseBuilder(messagingException);
+                exceptionEvent = Event.builder(event).message(InternalMessage.builder(event.getMessage())
+                                                                  .payload(messagingException.getCause().getMessage()).build())
+                    .build();
+              }
+              addThrottlingHeaders(failureResponseBuilder);
 
-                    if (errorMessage.getPayload().getValue() == null) {
-                      errorMessage = Message.builder(errorMessage).payload(messagingException.getMessage()).build();
-                    }
+              HttpResponse response;
+              try {
+                response = muleEventToHttpResponse.create(exceptionEvent, failureResponseBuilder, errorResponseBuilder,
+                                                          supportStreaming);
+              } catch (MessagingException e) {
+                response = new DefaultHttpResponse(new ResponseStatus(500, "Server error"), new MultiValueMap(),
+                                                   new EmptyHttpEntity());
+              }
+              responseCallback.responseReady(response, getResponseFailureCallback(responseCallback));
+            }
+          };
 
-                    exceptionEvent = Event.builder(event).message((InternalMessage) errorMessage).build();
-                  } else {
-                    failureResponseBuilder = createDefaultFailureResponseBuilder(messagingException);
-                    exceptionEvent = Event.builder(event).message(InternalMessage.builder(event.getMessage())
-                        .payload(messagingException.getCause().getMessage()).build())
-                        .build();
-                  }
-                  addThrottlingHeaders(failureResponseBuilder);
-
-                  HttpResponse response;
-                  try {
-                    response = muleEventToHttpResponse.create(exceptionEvent, failureResponseBuilder, errorResponseBuilder,
-                                                              supportStreaming);
-                  } catch (MessagingException e) {
-                    response = new DefaultHttpResponse(new ResponseStatus(500, "Server error"), new MultiValueMap(),
-                                                       new EmptyHttpEntity());
-                  }
-                  responseCallback.responseReady(response, getResponseFailureCallback(responseCallback));
-                }
-              };
-
-          sourceCallback.handle(createResult(requestContext));
+          SourceCallbackContext context = null;
+          context.addParameter("completionHandler", completionHandler);
+          sourceCallback.handle(createResult(requestContext), context);
         } catch (HttpRequestParsingException | IllegalArgumentException e) {
           LOGGER.warn("Exception occurred parsing request:", e);
           sendErrorResponse(BAD_REQUEST, e.getMessage(), responseCallback);
@@ -298,22 +294,23 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
       private void sendErrorResponse(final HttpConstants.HttpStatus status, String message,
                                      HttpResponseReadyCallback responseCallback) {
         responseCallback.responseReady(new HttpResponseBuilder()
-            .setStatusCode(status.getStatusCode())
-            .setReasonPhrase(status.getReasonPhrase())
-            .setEntity(new ByteArrayHttpEntity(message.getBytes()))
-            .build(), new ResponseStatusCallback() {
+                                           .setStatusCode(status.getStatusCode())
+                                           .setReasonPhrase(status.getReasonPhrase())
+                                           .setEntity(new ByteArrayHttpEntity(message.getBytes()))
+                                           .build(), new ResponseStatusCallback() {
 
-              @Override
-              public void responseSendFailure(Throwable exception) {
-                LOGGER.warn("Error while sending {} response {}", status.getStatusCode(), exception.getMessage());
-                if (LOGGER.isDebugEnabled()) {
-                  LOGGER.debug("Exception thrown", exception);
-                }
-              }
+          @Override
+          public void responseSendFailure(Throwable exception) {
+            LOGGER.warn("Error while sending {} response {}", status.getStatusCode(), exception.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+              LOGGER.debug("Exception thrown", exception);
+            }
+          }
 
-              @Override
-              public void responseSendSuccessfully() {}
-            });
+          @Override
+          public void responseSendSuccessfully() {
+          }
+        });
       }
     };
   }
@@ -331,7 +328,8 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     return new HttpResponseBuilder().setStatusCode(statusCodeFromException).setReasonPhrase(exception.getMessage());
   }
 
-  private Result<Object, HttpRequestAttributes> createResult(HttpRequestContext requestContext) throws HttpRequestParsingException {
+  private Result<Object, HttpRequestAttributes> createResult(HttpRequestContext requestContext)
+      throws HttpRequestParsingException {
     return transform(requestContext, muleContext, parseRequest, listenerPath);
     // TODO: MULE-9748 Analyse RequestContext use in HTTP extension
     // Update RequestContext ThreadLocal for backwards compatibility
@@ -364,9 +362,8 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
       //  // Send the result from the event that was built from the Exception Strategy.
       //  return muleEventToHttpResponse.create(exceptionStrategyResult, responseBuilder, this.responseBuilder, supportsStreaming);
       //} catch (Exception innerException) {
-        // The failure occurred while executing the ES, or while building the response from the result of the ES
-        return buildErrorResponse();
-      }
+      // The failure occurred while executing the ES, or while building the response from the result of the ES
+      return buildErrorResponse();
     }
   }
 
@@ -430,15 +427,16 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
         if (uriParamNames.contains(uriParamName)) {
           // TODO: MULE-8946 This should throw a MuleException
           throw new MuleRuntimeException(CoreMessages
-              .createStaticMessage(String.format("Http Listener with path %s contains duplicated uri param names", this.path)));
+                                             .createStaticMessage(String.format(
+                                                 "Http Listener with path %s contains duplicated uri param names", this.path)));
         }
         uriParamNames.add(uriParamName);
       } else {
         if (pathPart.contains("*") && pathPart.length() > 1) {
           // TODO: MULE-8946 This should throw a MuleException
           throw new MuleRuntimeException(CoreMessages.createStaticMessage(String.format(
-                                                                                        "Http Listener with path %s contains an invalid use of a wildcard. Wildcards can only be used at the end of the path (i.e.: /path/*) or between / characters (.i.e.: /path/*/anotherPath))",
-                                                                                        this.path)));
+              "Http Listener with path %s contains an invalid use of a wildcard. Wildcards can only be used at the end of the path (i.e.: /path/*) or between / characters (.i.e.: /path/*/anotherPath))",
+              this.path)));
         }
       }
     }

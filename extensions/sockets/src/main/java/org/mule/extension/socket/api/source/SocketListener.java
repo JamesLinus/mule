@@ -10,23 +10,27 @@ import static java.lang.String.format;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
-
 import org.mule.extension.socket.api.SocketAttributes;
 import org.mule.extension.socket.api.config.ListenerConfig;
 import org.mule.extension.socket.api.connection.ListenerConnection;
 import org.mule.extension.socket.api.worker.SocketWorker;
 import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ThreadingProfile;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.construct.FlowConstructAware;
 import org.mule.runtime.core.api.context.WorkManager;
+import org.mule.runtime.core.exception.MessagingException;
+import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.param.Connection;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
 import org.mule.runtime.extension.api.annotation.source.EmitsResponse;
+import org.mule.runtime.extension.api.annotation.source.OnError;
+import org.mule.runtime.extension.api.annotation.source.OnSuccess;
 import org.mule.runtime.extension.api.runtime.source.Source;
 import org.mule.runtime.extension.api.runtime.source.SourceCallback;
+import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
@@ -57,8 +61,6 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
   @Inject
   private MuleContext muleContext;
 
-  private WorkManager workManager;
-
   @Connection
   private ListenerConnection connection;
 
@@ -66,7 +68,7 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
   private ListenerConfig config;
 
   private AtomicBoolean stopRequested = new AtomicBoolean(false);
-  private SourceCallback<InputStream, SocketAttributes> sourceCallback;
+  private WorkManager workManager;
 
   /**
    * {@inheritDoc}
@@ -84,12 +86,32 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
         newSingleThreadExecutor(r -> new Thread(r,
                                                 format("%s%s.socket.listener", getPrefix(muleContext), flowConstruct.getName())));
 
-    this.sourceCallback = sourceCallback;
     stopRequested.set(false);
-    executorService.execute(this::listen);
+    executorService.execute(() -> listen(sourceCallback));
+  }
+
+  @OnSuccess
+  public void onSuccess(@Optional(defaultValue = "#[payload]") @XmlHints(allowReferences = false) Object responseValue,
+                        SourceCallbackContext context) {
+    SocketWorker worker = context.getParameter("work");
+    worker.onComplete(responseValue);
+  }
+
+
+  @OnError
+  public void onError(Error error, SourceCallbackContext context) {
+    SocketWorker worker = context.getParameter("work");
+    worker.onError(error.getCause());
   }
 
   private class SocketWorkListener implements WorkListener {
+
+    private final SourceCallback<InputStream, SocketAttributes> sourceCallback;
+
+    private SocketWorkListener(
+        SourceCallback<InputStream, SocketAttributes> sourceCallback) {
+      this.sourceCallback = sourceCallback;
+    }
 
     /**
      * {@inheritDoc}
@@ -153,13 +175,9 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
    */
   @Override
   public void onStop() {
-    try {
       stopRequested.set(true);
       workManager.dispose();
       shutdownExecutor();
-    } finally {
-      sourceCallback = null;
-    }
   }
 
   /**
@@ -194,9 +212,9 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
     }
   }
 
-  private void listen() {
+  private void listen(SourceCallback<InputStream, SocketAttributes> sourceCallback) {
 
-    SocketWorkListener socketWorkListener = new SocketWorkListener();
+    SocketWorkListener socketWorkListener = new SocketWorkListener(sourceCallback);
     for (;;) {
       if (isRequestedToStop()) {
         return;

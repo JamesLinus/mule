@@ -7,18 +7,11 @@
 package org.mule.extension.socket.api.worker;
 
 import static java.lang.String.format;
-import static org.mule.extension.socket.internal.SocketUtils.createResult;
-
 import org.mule.extension.socket.api.ImmutableSocketAttributes;
+import org.mule.extension.socket.api.SocketAttributes;
 import org.mule.extension.socket.api.connection.tcp.TcpListenerConnection;
 import org.mule.extension.socket.api.socket.tcp.TcpProtocol;
-import org.mule.extension.socket.api.SocketAttributes;
 import org.mule.extension.socket.internal.TcpInputStream;
-import org.mule.runtime.core.execution.CompletionHandler;
-import org.mule.runtime.core.execution.ExceptionCallback;
-import org.mule.runtime.api.message.MuleEvent;
-import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.extension.api.runtime.MessageHandler;
 import org.mule.runtime.extension.api.runtime.source.Source;
 import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 
@@ -141,30 +134,27 @@ public final class TcpWorker extends SocketWorker {
         break;
       }
 
-      SocketAttributes attributes = new ImmutableSocketAttributes(socket);
-      callback.handle(createResult(content, attributes), new CompletionHandler<MuleEvent, Exception, MuleEvent>() {
-
-        @Override
-        public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback) {
-          try {
-            protocol.write(dataOut, muleEvent.getMessage().getPayload().getValue(), encoding);
-            dataOut.flush();
-          } catch (IOException e) {
-            exceptionCallback.onException(new IOException(format("An error occurred while sending TCP response to address '%s'",
-                                                                 socket.getRemoteSocketAddress().toString(), e)));
-          }
-        }
-
-        @Override
-        public void onFailure(Exception e) {
-          LOGGER.error("TCP worker will not answer back due an exception was received", e);
-
-          // end worker's execution
-          moreMessages.set(false);
-        }
-      });
-
+      handle(content, new ImmutableSocketAttributes(socket));
     }
+  }
+
+  @Override
+  public void onComplete(Object result) {
+    try {
+      protocol.write(dataOut, result, encoding);
+      dataOut.flush();
+    } catch (IOException e) {
+      callback.onSourceException(new IOException(format("An error occurred while sending TCP response to address '%s'",
+                                                           socket.getRemoteSocketAddress().toString(), e)));
+    }
+  }
+
+  @Override
+  public void onError(Throwable e) {
+    LOGGER.error("TCP worker will not answer back due an exception was received", e);
+
+    // end worker's execution
+    moreMessages.set(false);
   }
 
   @Override
