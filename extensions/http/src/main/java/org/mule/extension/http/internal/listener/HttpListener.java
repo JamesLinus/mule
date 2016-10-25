@@ -6,12 +6,13 @@
  */
 package org.mule.extension.http.internal.listener;
 
+import static java.util.Optional.ofNullable;
 import static org.mule.extension.http.internal.HttpConnector.CONFIGURATION_OVERRIDES;
 import static org.mule.extension.http.internal.HttpConnector.RESPONSE_SETTINGS;
 import static org.mule.extension.http.internal.listener.HttpRequestToResult.transform;
 import static org.mule.runtime.core.api.Event.setCurrentEvent;
-import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.startIfNeeded;
+import static org.mule.runtime.core.config.ExceptionHelper.getTransportErrorMapping;
 import static org.mule.runtime.core.exception.Errors.ComponentIdentifiers.SECURITY;
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED;
@@ -22,23 +23,20 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.mule.extension.http.api.HttpRequestAttributes;
 import org.mule.extension.http.api.HttpResponseAttributes;
 import org.mule.extension.http.api.HttpStreamingType;
-import org.mule.extension.http.api.listener.builder.HttpListenerResponseBuilder;
+import org.mule.extension.http.api.listener.builder.HttpListenerErrorResponseBuilder;
+import org.mule.extension.http.api.listener.builder.HttpListenerSuccessResponseBuilder;
 import org.mule.extension.http.internal.HttpMetadataResolver;
 import org.mule.extension.http.internal.listener.server.HttpListenerConfig;
 import org.mule.runtime.api.message.Error;
 import org.mule.runtime.api.message.ErrorType;
 import org.mule.runtime.api.message.Message;
-import org.mule.runtime.core.api.Event;
+import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
-import org.mule.runtime.core.api.message.InternalMessage;
-import org.mule.runtime.core.config.ExceptionHelper;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.exception.ErrorTypeRepository;
 import org.mule.runtime.core.exception.MessagingException;
-import org.mule.runtime.core.execution.CompletionHandler;
-import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
@@ -48,6 +46,7 @@ import org.mule.runtime.extension.api.annotation.param.UseConfig;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.source.EmitsResponse;
+import org.mule.runtime.extension.api.annotation.source.OnError;
 import org.mule.runtime.extension.api.annotation.source.OnSuccess;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.source.Source;
@@ -142,25 +141,69 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
   @Placement(tab = ADVANCED, group = CONFIGURATION_OVERRIDES)
   private Boolean parseRequest;
 
-  @Parameter
-  @Optional
-  @DisplayName(RESPONSE_SETTINGS)
-  @Placement(group = RESPONSE_SETTINGS)
-  private HttpListenerResponseBuilder responseBuilder;
-
-  @Parameter
-  @Optional
-  @DisplayName(ERROR_RESPONSE_SETTINGS)
-  @Placement(group = ERROR_RESPONSE_SETTINGS)
-  private HttpListenerResponseBuilder errorResponseBuilder;
-
   private MethodRequestMatcher methodRequestMatcher = AcceptsAllMethodsRequestMatcher.instance();
   private HttpThrottlingHeadersMapBuilder httpThrottlingHeadersMapBuilder = new HttpThrottlingHeadersMapBuilder();
   private String[] parsedAllowedMethods;
   private ListenerPath listenerPath;
   private RequestHandlerManager requestHandlerManager;
-  private MuleEventToHttpResponse muleEventToHttpResponse;
+  private HttpResponseFactory responseFactory;
   private List<ErrorType> knownErrors;
+
+  @OnSuccess
+  public void onSuccess(@Optional @DisplayName(RESPONSE_SETTINGS) @Placement(group = RESPONSE_SETTINGS)
+                            HttpListenerSuccessResponseBuilder responseBuilder,
+                        DataType dataType,
+                        SourceCallbackContext callbackContext) {
+
+    if (responseBuilder == null) {
+      responseBuilder = new HttpListenerSuccessResponseBuilder();
+    }
+
+    HttpResponseContext context = callbackContext.getParameter("responseContext");
+    HttpResponse httpResponse = buildResponse(responseBuilder, dataType, context.isSupportStreaming());
+    final HttpResponseReadyCallback responseCallback = context.getResponseCallback();
+    responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
+  }
+
+  @OnError
+  public void onError(@Optional @DisplayName(ERROR_RESPONSE_SETTINGS) @Placement(group = ERROR_RESPONSE_SETTINGS)
+                          HttpListenerErrorResponseBuilder errorResponseBuilder,
+                      SourceCallbackContext callbackContext,
+                      Error error) {
+
+    if (errorResponseBuilder == null) {
+      errorResponseBuilder = new HttpListenerErrorResponseBuilder();
+    }
+
+    // For now let's use the HTTP transport exception mapping since makes sense and the gateway depends on it.
+    final HttpResponseBuilder failureResponseBuilder;
+    if (hasCustomResponse(ofNullable(error))) {
+      Message errorMessage = error.getErrorMessage();
+      checkArgument(errorMessage.getAttributes() instanceof HttpResponseAttributes, "Error message must be HTTP compliant.");
+      HttpResponseAttributes attributes = (HttpResponseAttributes) errorMessage.getAttributes();
+      failureResponseBuilder = new HttpResponseBuilder()
+          .setStatusCode(attributes.getStatusCode())
+          .setReasonPhrase(attributes.getReasonPhrase());
+      attributes.getHeaders().forEach(failureResponseBuilder::addHeader);
+    } else {
+      failureResponseBuilder = createDefaultFailureResponseBuilder(error.getCause());
+    }
+
+    addThrottlingHeaders(failureResponseBuilder);
+    HttpResponseContext context = callbackContext.getParameter("responseContext");
+
+    HttpResponse response;
+    try {
+      response = responseFactory
+          .create(failureResponseBuilder, errorResponseBuilder, error.getErrorMessage().getPayload().getDataType(), context.isSupportStreaming());
+    } catch (MessagingException e) {
+      response = new DefaultHttpResponse(new ResponseStatus(500, "Server error"), new MultiValueMap(),
+                                         new EmptyHttpEntity());
+    }
+
+    final HttpResponseReadyCallback responseCallback = context.getResponseCallback();
+    responseCallback.responseReady(response, getResponseFailureCallback(responseCallback));
+  }
 
   @Override
   public void onStart(SourceCallback<Object, HttpRequestAttributes> sourceCallback) throws Exception {
@@ -169,24 +212,12 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
       methodRequestMatcher = new MethodRequestMatcher(parsedAllowedMethods);
     }
 
-    if (responseBuilder == null) {
-      responseBuilder = new HttpListenerResponseBuilder();
-    }
-
-    initialiseIfNeeded(responseBuilder);
-    startIfNeeded(responseBuilder);
-
-    if (errorResponseBuilder == null) {
-      errorResponseBuilder = new HttpListenerResponseBuilder();
-    }
-
-    initialiseIfNeeded(errorResponseBuilder);
-    startIfNeeded(errorResponseBuilder);
-
     path = HttpParser.sanitizePathWithStartSlash(path);
     listenerPath = config.getFullListenerPath(path);
     path = listenerPath.getResolvedPath();
-    muleEventToHttpResponse = new MuleEventToHttpResponse(responseStreamingMode, muleContext);
+    responseFactory = new HttpResponseFactory(responseStreamingMode, muleContext);
+    startIfNeeded(responseFactory);
+
     validatePath();
     parseRequest = config.resolveParseRequest(parseRequest);
     try {
@@ -208,14 +239,6 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     }
   }
 
-  @OnSuccess
-  public void onSuccess() {
-    //final HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
-    //final HttpResponse httpResponse =
-    //    buildResponse(result, responseBuilder, supportStreaming, exceptionCallback);
-    //responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
-  }
-
   private RequestHandler getRequestHandler(SourceCallback<Object, HttpRequestAttributes> sourceCallback) {
     return new RequestHandler() {
 
@@ -223,62 +246,15 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
       public void handleRequest(HttpRequestContext requestContext, HttpResponseReadyCallback responseCallback) {
         // TODO: MULE-9698 Analyse adding security here to reject the HttpRequestContext and avoid creating a Message
         try {
+          HttpResponseContext responseContext = new HttpResponseContext();
           final String httpVersion = requestContext.getRequest().getProtocol().asString();
-          final boolean supportStreaming = supportsTransferEncoding(httpVersion);
-          CompletionHandler<Event, Exception> completionHandler = new CompletionHandler<Event, Exception>() {
-
-            @Override
-            public void onCompletion(Event result, ExceptionCallback<Throwable> exceptionCallback) {
-              final HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
-              final HttpResponse httpResponse =
-                  buildResponse(result, responseBuilder, supportStreaming, exceptionCallback);
-              responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
-            }
-
-            @Override
-            public void onFailure(Exception exception) {
-              // For now let's use the HTTP transport exception mapping since makes sense and the gateway depends on it.
-              MessagingException messagingException = (MessagingException) exception;
-              Event event = messagingException.getEvent();
-              final HttpResponseBuilder failureResponseBuilder;
-              Event exceptionEvent;
-              if (hasCustomResponse(messagingException.getEvent().getError())) {
-                Message errorMessage = messagingException.getEvent().getError().get().getErrorMessage();
-                checkArgument(errorMessage.getAttributes() instanceof HttpResponseAttributes,
-                              "Error message must be HTTP compliant.");
-                HttpResponseAttributes attributes = (HttpResponseAttributes) errorMessage.getAttributes();
-                failureResponseBuilder = new HttpResponseBuilder()
-                    .setStatusCode(attributes.getStatusCode())
-                    .setReasonPhrase(attributes.getReasonPhrase());
-                attributes.getHeaders().forEach(failureResponseBuilder::addHeader);
-
-                if (errorMessage.getPayload().getValue() == null) {
-                  errorMessage = Message.builder(errorMessage).payload(messagingException.getMessage()).build();
-                }
-
-                exceptionEvent = Event.builder(event).message((InternalMessage) errorMessage).build();
-              } else {
-                failureResponseBuilder = createDefaultFailureResponseBuilder(messagingException);
-                exceptionEvent = Event.builder(event).message(InternalMessage.builder(event.getMessage())
-                                                                  .payload(messagingException.getCause().getMessage()).build())
-                    .build();
-              }
-              addThrottlingHeaders(failureResponseBuilder);
-
-              HttpResponse response;
-              try {
-                response = muleEventToHttpResponse.create(exceptionEvent, failureResponseBuilder, errorResponseBuilder,
-                                                          supportStreaming);
-              } catch (MessagingException e) {
-                response = new DefaultHttpResponse(new ResponseStatus(500, "Server error"), new MultiValueMap(),
-                                                   new EmptyHttpEntity());
-              }
-              responseCallback.responseReady(response, getResponseFailureCallback(responseCallback));
-            }
-          };
+          responseContext.setHttpVersion(httpVersion);
+          responseContext.setSupportStreaming(supportsTransferEncoding(httpVersion));
+          responseContext.setResponseCallback(responseCallback);
 
           SourceCallbackContext context = null;
-          context.addParameter("completionHandler", completionHandler);
+          context.addParameter("responseContext", responseContext);
+
           sourceCallback.handle(createResult(requestContext), context);
         } catch (HttpRequestParsingException | IllegalArgumentException e) {
           LOGGER.warn("Exception occurred parsing request:", e);
@@ -319,11 +295,8 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     return error.isPresent() && knownErrors.contains(error.get().getErrorType()) && error.get().getErrorMessage() != null;
   }
 
-  private HttpResponseBuilder createDefaultFailureResponseBuilder(MessagingException messagingException) {
-    Throwable exception = messagingException.getCause();
-    String exceptionStatusCode =
-        ExceptionHelper.getTransportErrorMapping(HTTP.getScheme(), exception.getClass(),
-                                                 muleContext);
+  private HttpResponseBuilder createDefaultFailureResponseBuilder(Throwable exception) {
+    String exceptionStatusCode = getTransportErrorMapping(HTTP.getScheme(), exception.getClass(), muleContext);
     Integer statusCodeFromException = exceptionStatusCode != null ? Integer.valueOf(exceptionStatusCode) : 500;
     return new HttpResponseBuilder().setStatusCode(statusCodeFromException).setReasonPhrase(exception.getMessage());
   }
@@ -337,32 +310,21 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     // return muleEvent;
   }
 
-  protected HttpResponse buildResponse(Event event, final HttpResponseBuilder responseBuilder, boolean supportStreaming,
-                                       ExceptionCallback exceptionCallback) {
-    addThrottlingHeaders(responseBuilder);
-    final HttpResponse httpResponse;
+  protected HttpResponse buildResponse(HttpListenerSuccessResponseBuilder listenerResponseBuilder, DataType dataType,
+                                       boolean supportStreaming) {
 
-    if (event == null) {
-      // If the event was filtered, return an empty response with status code 200 OK.
-      httpResponse = responseBuilder.setStatusCode(200).build();
-    } else {
-      httpResponse = doBuildResponse(event, responseBuilder, supportStreaming, exceptionCallback);
-    }
-    return httpResponse;
+    HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
+    addThrottlingHeaders(responseBuilder);
+    return doBuildResponse(responseBuilder, listenerResponseBuilder, dataType, supportStreaming);
   }
 
-  protected HttpResponse doBuildResponse(Event event, final HttpResponseBuilder responseBuilder, boolean supportsStreaming,
-                                         ExceptionCallback exceptionCallback) {
+  protected HttpResponse doBuildResponse(HttpResponseBuilder responseBuilder,
+                                         HttpListenerSuccessResponseBuilder listenerResponseBuilder,
+                                         DataType dataType,
+                                         boolean supportsStreaming) {
     try {
-      return muleEventToHttpResponse.create(event, responseBuilder, this.responseBuilder, supportsStreaming);
+      return responseFactory.create(responseBuilder, listenerResponseBuilder, dataType, supportsStreaming);
     } catch (Exception e) {
-      //try {
-      //  // Handle errors that occur while building the response. We need to send ES result back.
-      //  Event exceptionStrategyResult = (Event) exceptionCallback.onException(e);
-      //  // Send the result from the event that was built from the Exception Strategy.
-      //  return muleEventToHttpResponse.create(exceptionStrategyResult, responseBuilder, this.responseBuilder, supportsStreaming);
-      //} catch (Exception innerException) {
-      // The failure occurred while executing the ES, or while building the response from the result of the ES
       return buildErrorResponse();
     }
   }

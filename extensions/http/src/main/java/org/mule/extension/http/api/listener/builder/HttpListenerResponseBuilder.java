@@ -7,55 +7,58 @@
 package org.mule.extension.http.api.listener.builder;
 
 import org.mule.extension.http.api.HttpMessageBuilder;
-import org.mule.runtime.core.api.Event;
-import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
- * Component that specifies how to create a proper HTTP response.
+ * Base class for a {@link HttpMessageBuilder} which returns errors responses
  *
  * @since 4.0
  */
-@Alias("response-builder")
-@XmlHints(allowTopLevelDefinition = true)
-public class HttpListenerResponseBuilder extends HttpMessageBuilder {
+public abstract class HttpListenerResponseBuilder extends HttpMessageBuilder {
 
   /**
    * HTTP status code the response should have.
    */
   @Parameter
   @Optional
-  private Function<Event, Integer> statusCode;
+  private Integer statusCode;
 
   /**
    * HTTP reason phrase the response should have.
    */
   @Parameter
   @Optional
-  private Function<Event, String> reasonPhrase;
+  private String reasonPhrase;
+
+  @Parameter
+  @Optional(defaultValue = "#[payload]")
+  @XmlHints(allowReferences = false)
+  private Object body;
 
   /**
    * HTTP headers the response should have, as an expression. Will override the headers attribute.
    */
   @Parameter
   @Optional
-  private Function<Event, Map> headersRef;
+  private Map<String, String> headersRef = new HashMap<>();
 
-  public Integer getStatusCode(Event event) {
-    return statusCode != null ? statusCode.apply(event) : null;
+  public abstract Object getBody();
+
+  public Integer getStatusCode() {
+    return statusCode;
   }
 
-  public String getReasonPhrase(Event event) {
-    return reasonPhrase != null ? reasonPhrase.apply(event) : null;
+  public String getReasonPhrase() {
+    return reasonPhrase;
   }
 
-  public Map<String, String> getHeaders(Event event) {
-    return headersRef != null ? headersRef.apply(event) : headers;
+  public Map<String, String> getHeaders() {
+    return headersRef;
   }
 
 }

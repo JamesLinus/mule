@@ -63,6 +63,4 @@ final class ExtensionFlowProcessingTemplate implements AsyncResponseFlowProcessi
                                                          (Event) event);
     }
   }
-
-
 }
