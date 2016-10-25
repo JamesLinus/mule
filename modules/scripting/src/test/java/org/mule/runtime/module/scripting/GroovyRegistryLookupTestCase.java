@@ -8,8 +8,13 @@ package org.mule.runtime.module.scripting;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.mule.runtime.core.api.message.InternalMessage;
+
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.api.message.InternalMessage;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
+
+import java.util.List;
 
 import org.junit.Test;
 
@@ -18,6 +23,11 @@ public class GroovyRegistryLookupTestCase extends FunctionalTestCase {
   @Override
   protected String getConfigFile() {
     return "groovy-registry-lookup-config.xml";
+  }
+
+  @Override
+  protected void addBuilders(List<ConfigurationBuilder> builders) {
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Override

@@ -8,9 +8,13 @@ package org.mule.runtime.module.xml.el;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 
 import java.io.InputStream;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -19,6 +23,12 @@ public class XPath3NamespaceTestCase extends FunctionalTestCase {
   @Override
   protected String getConfigFile() {
     return "xpath-namespace-config.xml";
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

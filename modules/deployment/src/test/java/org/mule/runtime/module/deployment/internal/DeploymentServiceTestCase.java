@@ -331,6 +331,7 @@ public class DeploymentServiceTestCase extends AbstractMuleTestCase {
 
     services = getServicesFolder();
     services.mkdirs();
+    FileUtils.copyFileToDirectory(new File(System.getProperty("scheduler.service")), services);
 
     applicationDeploymentListener = mock(DeploymentListener.class);
     domainDeploymentListener = mock(DeploymentListener.class);

@@ -15,11 +15,16 @@ import static org.junit.Assert.fail;
 import static org.mule.runtime.api.metadata.MediaType.APPLICATION_XML;
 import static org.mule.runtime.core.util.XMLSecureFactories.EXPAND_ENTITIES_PROPERTY;
 import static org.mule.runtime.core.util.XMLSecureFactories.EXTERNAL_ENTITIES_PROPERTY;
+
 import org.mule.functional.junit4.FunctionalTestCase;
 import org.mule.runtime.api.message.Message;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.util.IOUtils;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 import org.mule.tck.junit4.rule.DynamicPort;
+
+import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,6 +50,12 @@ public class JaxbSecurityTestCase extends FunctionalTestCase {
   @Override
   protected String getConfigFile() {
     return "jaxb-transformer-security.xml";
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   protected String getXmlWithEntities() {

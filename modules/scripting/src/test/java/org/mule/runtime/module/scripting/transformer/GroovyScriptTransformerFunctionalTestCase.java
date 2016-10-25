@@ -8,9 +8,14 @@ package org.mule.runtime.module.scripting.transformer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.mule.runtime.core.api.message.InternalMessage;
-import org.mule.runtime.core.api.client.MuleClient;
+
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.client.MuleClient;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.api.message.InternalMessage;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
+
+import java.util.List;
 
 import org.junit.Test;
 
@@ -24,6 +29,11 @@ public class GroovyScriptTransformerFunctionalTestCase extends FunctionalTestCas
   @Override
   protected String getConfigFile() {
     return "groovy-transformer-config-flow.xml";
+  }
+
+  @Override
+  protected void addBuilders(List<ConfigurationBuilder> builders) {
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

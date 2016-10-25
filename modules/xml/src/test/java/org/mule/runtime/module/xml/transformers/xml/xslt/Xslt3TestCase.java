@@ -11,9 +11,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-import org.mule.runtime.core.exception.MessagingException;
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.util.IOUtils;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
+
+import java.util.List;
 
 import org.custommonkey.xmlunit.XMLUnit;
 import org.hamcrest.CoreMatchers;
@@ -29,6 +33,12 @@ public class Xslt3TestCase extends FunctionalTestCase {
   @Override
   protected void doSetUp() throws Exception {
     XMLUnit.setIgnoreWhitespace(true);
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

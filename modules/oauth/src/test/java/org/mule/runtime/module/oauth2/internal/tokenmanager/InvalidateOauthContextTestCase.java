@@ -10,8 +10,12 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.module.oauth2.internal.authorizationcode.state.ConfigOAuthContext;
 import org.mule.runtime.module.oauth2.internal.authorizationcode.state.ResourceOwnerOAuthContext;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
+
+import java.util.List;
 
 import org.hamcrest.core.Is;
 import org.junit.Test;
@@ -25,6 +29,11 @@ public class InvalidateOauthContextTestCase extends FunctionalTestCase {
   @Override
   protected String getConfigFile() {
     return "tokenmanager/invalidate-oauth-context-config.xml";
+  }
+
+  @Override
+  protected void addBuilders(List<ConfigurationBuilder> builders) {
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

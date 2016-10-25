@@ -13,7 +13,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.core.util.IOUtils;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +47,12 @@ public class XQuery3TestCase extends FunctionalTestCase {
   protected void doSetUp() throws Exception {
     XMLUnit.setIgnoreWhitespace(true);
     input = IOUtils.getResourceAsString("cd-catalog.xml", getClass());
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

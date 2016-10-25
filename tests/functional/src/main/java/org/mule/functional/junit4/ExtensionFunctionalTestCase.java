@@ -12,6 +12,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.runtime.core.util.IOUtils.getResourceAsUrl;
 import static org.springframework.util.ReflectionUtils.findMethod;
+
 import org.mule.runtime.core.DefaultMuleContext;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
@@ -22,6 +23,7 @@ import org.mule.runtime.extension.api.resources.GeneratedResource;
 import org.mule.runtime.extension.api.resources.ResourcesGenerator;
 import org.mule.runtime.module.extension.internal.manager.DefaultExtensionManager;
 import org.mule.runtime.module.extension.internal.manager.ExtensionManagerAdapter;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 import org.mule.test.runner.infrastructure.ExtensionsTestInfrastructureDiscoverer;
 
 import java.io.File;
@@ -88,6 +90,7 @@ public abstract class ExtensionFunctionalTestCase extends FunctionalTestCase {
         createExtensionsManager(muleContext);
       }
     });
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   private void createExtensionsManager(MuleContext muleContext) throws Exception {

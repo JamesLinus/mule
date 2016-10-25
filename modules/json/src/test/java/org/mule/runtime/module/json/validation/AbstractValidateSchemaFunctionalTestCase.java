@@ -7,12 +7,22 @@
 package org.mule.runtime.module.json.validation;
 
 import static junit.framework.TestCase.fail;
-import org.mule.runtime.core.exception.MessagingException;
+
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.exception.MessagingException;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
+
+import java.util.List;
 
 abstract class AbstractValidateSchemaFunctionalTestCase extends FunctionalTestCase {
 
   protected static final String VALIDATE_FLOW = "validate";
+
+  @Override
+  protected void addBuilders(List<ConfigurationBuilder> builders) {
+    builders.add(new RegisterServicesConfigurationBuilder());
+  }
 
   protected void runAndExpectFailure(Object payload) throws Throwable {
     try {

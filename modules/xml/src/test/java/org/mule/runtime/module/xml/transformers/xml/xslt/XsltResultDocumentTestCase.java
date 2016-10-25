@@ -11,11 +11,14 @@ import static org.junit.Assert.assertThat;
 
 import org.mule.functional.junit4.FlowRunner;
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.core.util.FileUtils;
 import org.mule.runtime.core.util.IOUtils;
 import org.mule.runtime.core.util.UUID;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 
 import java.io.File;
+import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +38,12 @@ public class XsltResultDocumentTestCase extends FunctionalTestCase {
   @Override
   protected String getConfigFile() {
     return "xsl/xslt-result-document-config.xml";
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

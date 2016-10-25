@@ -8,17 +8,26 @@ package org.mule.runtime.components.script.refreshable;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.mule.runtime.core.api.message.InternalMessage;
+
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.util.IOUtils;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 public abstract class AbstractRefreshableBeanTestCase extends FunctionalTestCase {
 
   protected static final int WAIT_TIME = 1000;
+
+  @Override
+  protected void addBuilders(List<ConfigurationBuilder> builders) {
+    builders.add(new RegisterServicesConfigurationBuilder());
+  }
 
   protected void writeScript(String src, String path) throws IOException {
     FileWriter scriptFile = new FileWriter(path, false);

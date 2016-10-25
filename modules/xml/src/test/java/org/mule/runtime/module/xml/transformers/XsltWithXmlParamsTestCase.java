@@ -9,9 +9,13 @@ package org.mule.runtime.module.xml.transformers;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.mule.runtime.core.api.Event;
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.Event;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.module.xml.util.XMLTestUtils;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
+
+import java.util.List;
 
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
@@ -24,6 +28,12 @@ public class XsltWithXmlParamsTestCase extends FunctionalTestCase {
   @Override
   protected String getConfigFile() {
     return "xslt-with-xml-param-config.xml";
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

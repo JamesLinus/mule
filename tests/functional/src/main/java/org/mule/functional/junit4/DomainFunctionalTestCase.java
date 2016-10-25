@@ -8,8 +8,11 @@ package org.mule.functional.junit4;
 
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.api.message.InternalMessage;
+import org.mule.runtime.core.api.registry.MuleRegistry;
+import org.mule.runtime.core.api.registry.RegistrationException;
+import org.mule.tck.UnitTestSchedulerService;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.probe.PollingProber;
 import org.mule.tck.probe.Probe;
@@ -24,8 +27,8 @@ import org.junit.Before;
 
 public abstract class DomainFunctionalTestCase extends AbstractMuleTestCase {
 
-  private final Map<String, MuleContext> muleContexts = new HashMap<String, MuleContext>();
-  private final List<MuleContext> disposedContexts = new ArrayList<MuleContext>();
+  private final Map<String, MuleContext> muleContexts = new HashMap<>();
+  private final List<MuleContext> disposedContexts = new ArrayList<>();
   private MuleContext domainContext;
 
   protected abstract String getDomainConfig();
@@ -50,11 +53,22 @@ public abstract class DomainFunctionalTestCase extends AbstractMuleTestCase {
   @Before
   public void setUpMuleContexts() throws Exception {
     domainContext = new DomainContextBuilder().setDomainConfig(getDomainConfig()).build();
+    registerTestObjects(domainContext.getRegistry());
     ApplicationConfig[] applicationConfigs = getConfigResources();
     for (ApplicationConfig applicationConfig : applicationConfigs) {
       MuleContext muleContext = createAppMuleContext(applicationConfig.applicationResources);
       muleContexts.put(applicationConfig.applicationName, muleContext);
     }
+  }
+
+  /**
+   * Registers objects into the given {@code muleRegistry} that are needed by the tests.
+   * 
+   * @param muleRegistry
+   * @throws RegistrationException
+   */
+  protected void registerTestObjects(MuleRegistry muleRegistry) throws RegistrationException {
+    muleRegistry.registerObject("UnitTestSchedulerService", new UnitTestSchedulerService());
   }
 
   @After

@@ -9,12 +9,15 @@ package org.mule.runtime.module.xml.transformers.xml.xslt;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.Matchers.instanceOf;
 
-import org.mule.runtime.core.api.transformer.MessageTransformerException;
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.api.transformer.MessageTransformerException;
 import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.util.IOUtils;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +38,12 @@ public class XsltTransformerXXETestCase extends FunctionalTestCase {
   @Override
   protected String getConfigFile() {
     return "xslt-xxe-config.xml";
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test

@@ -9,7 +9,12 @@ package org.mule.runtime.module.xml.transformers.xml.xslt;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
+
 import org.mule.functional.junit4.FunctionalTestCase;
+import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
+
+import java.util.List;
 
 import org.junit.Test;
 
@@ -35,6 +40,12 @@ public class XsltTransformerBLTestCase extends FunctionalTestCase {
         "<!ENTITY xxe4 \"&xxe3;&xxe3;\">" +
         "]> \n" +
         "<entityName>Hello123456890 &xxe4;&xxe4;&xxe4;</entityName>";
+  }
+
+  @Override
+  protected final void addBuilders(List<ConfigurationBuilder> builders) {
+    super.addBuilders(builders);
+    builders.add(new RegisterServicesConfigurationBuilder());
   }
 
   @Test
