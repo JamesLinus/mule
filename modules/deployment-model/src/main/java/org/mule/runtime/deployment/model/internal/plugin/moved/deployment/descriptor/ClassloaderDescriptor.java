@@ -6,8 +6,8 @@
  */
 package org.mule.runtime.deployment.model.internal.plugin.moved.deployment.descriptor;
 
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.DeploymentModel;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedDeploymentModelException;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 
 import java.net.URL;
 import java.util.Map;
@@ -21,5 +21,5 @@ public interface ClassloaderDescriptor {
 
   String getId();
 
-  DeploymentModel load(URL location, Map<String, Object> attributes) throws MalformedDeploymentModelException;
+  ClassloaderModel load(URL location, Map<String, Object> attributes) throws MalformedClassloaderModelException;
 }

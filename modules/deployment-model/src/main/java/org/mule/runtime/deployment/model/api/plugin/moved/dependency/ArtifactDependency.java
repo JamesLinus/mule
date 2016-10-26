@@ -6,8 +6,6 @@
  */
 package org.mule.runtime.deployment.model.api.plugin.moved.dependency;
 
-import org.mule.runtime.deployment.model.internal.plugin.moved.dependency.DefaultArtifactDependency;
-
 /**
  * Represents an artifact dependency
  *
@@ -45,13 +43,4 @@ public interface ArtifactDependency {
    * TODO MULE-10785 remove this class
    */
   Scope getScope();
-
-  /**
-   * TODO MULE-10785 remove this one
-   */
-  static ArtifactDependency create(String groupId, String artifactId, String version,
-                                   String type, String classifier,
-                                   Scope scope) {
-    return new DefaultArtifactDependency(groupId, artifactId, version, type, classifier, scope);
-  }
 }

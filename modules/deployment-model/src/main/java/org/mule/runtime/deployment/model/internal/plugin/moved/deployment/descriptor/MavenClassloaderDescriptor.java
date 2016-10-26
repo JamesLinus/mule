@@ -9,10 +9,10 @@ package org.mule.runtime.deployment.model.internal.plugin.moved.deployment.descr
 import static java.lang.String.format;
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.ArtifactDependency;
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.Scope;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.DeploymentModel;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedDeploymentModelException;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 import org.mule.runtime.deployment.model.internal.plugin.moved.dependency.DefaultArtifactDependency;
-import org.mule.runtime.deployment.model.internal.plugin.moved.deployment.DefaultDeploymentModel;
+import org.mule.runtime.deployment.model.internal.plugin.moved.deployment.DefaultClassloaderModel;
 import org.mule.runtime.deployment.model.internal.plugin.moved.resource.URLPluginResourceLoader;
 import org.mule.runtime.module.artifact.net.MulePluginUrlStreamHandler;
 
@@ -49,25 +49,25 @@ public class MavenClassloaderDescriptor implements ClassloaderDescriptor {
   }
 
   @Override
-  public DeploymentModel load(URL location, Map<String, Object> attributes) throws MalformedDeploymentModelException {
-    return new DefaultDeploymentModel(parseRuntimeClasses(location), parseExportedPackages(attributes, "exportedPackages"),
-                                      parseExportedPackages(attributes, "exportedResources"),
-                                      parseDependencies(new URLPluginResourceLoader()
-                                          .loadResource(location, POM_DEPENDENCY_FILE.getPath())));
+  public ClassloaderModel load(URL location, Map<String, Object> attributes) throws MalformedClassloaderModelException {
+    return new DefaultClassloaderModel(parseRuntimeClasses(location), parseExportedPackages(attributes, "exportedPackages"),
+                                       parseExportedPackages(attributes, "exportedResources"),
+                                       parseDependencies(new URLPluginResourceLoader()
+                                           .loadResource(location, POM_DEPENDENCY_FILE.getPath())));
   }
 
-  private Optional<URL> parseRuntimeClasses(URL location) throws MalformedDeploymentModelException {
+  private Optional<URL> parseRuntimeClasses(URL location) throws MalformedClassloaderModelException {
     boolean isZip = location.getFile().endsWith(".zip");
     try {
       return Optional.of(isZip ? new URL(MulePluginUrlStreamHandler.PROTOCOL + ":" + location + "!/" + "classes" + "!/")
           : new URL(location, "classes"));
     } catch (MalformedURLException e) {
-      throw new MalformedDeploymentModelException("Cannot assembly /classes URL", e);
+      throw new MalformedClassloaderModelException("Cannot assembly /classes URL", e);
     }
   }
 
   private HashSet<String> parseExportedPackages(Map<String, Object> attributes, String key)
-      throws MalformedDeploymentModelException {
+      throws MalformedClassloaderModelException {
     try {
       List<String> elements = (List<String>) attributes.get(key);
       if (elements == null) {
@@ -75,13 +75,13 @@ public class MavenClassloaderDescriptor implements ClassloaderDescriptor {
       }
       return new HashSet<>(elements);
     } catch (ClassCastException e) {
-      throw new MalformedDeploymentModelException(format("Cannot consume %s from the current descriptor as it does not match to a List of strings",
-                                                         key));
+      throw new MalformedClassloaderModelException(format("Cannot consume %s from the current descriptor as it does not match to a List of strings",
+                                                          key));
     }
   }
 
   private Set<ArtifactDependency> parseDependencies(Optional<InputStream> pomInputStream)
-      throws MalformedDeploymentModelException {
+      throws MalformedClassloaderModelException {
     Set<ArtifactDependency> dependencies = new HashSet<>();
     if (!pomInputStream.isPresent()) {
       return dependencies;
@@ -97,7 +97,7 @@ public class MavenClassloaderDescriptor implements ClassloaderDescriptor {
         dependencies.add(artifactDependency);
       }
     } catch (IOException | XmlPullParserException e) {
-      throw new MalformedDeploymentModelException("There was a problem while reading the pom file", e);
+      throw new MalformedClassloaderModelException("There was a problem while reading the pom file", e);
     }
     return dependencies;
   }

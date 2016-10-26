@@ -19,7 +19,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-public class ZipDeploymentModelLoaderTestCase extends AbstractDeploymentModelLoaderTestCase {
+public class ZipClassloaderModelLoaderTestCase extends AbstractClassloaderModelLoaderTestCase {
 
   @Before
   public void setUp() throws MalformedURLException {

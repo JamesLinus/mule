@@ -10,8 +10,8 @@ package org.mule.runtime.deployment.model.internal.plugin.moved.deployment;
 import static java.lang.String.format;
 import org.mule.runtime.deployment.model.api.plugin.moved.Plugin;
 import org.mule.runtime.deployment.model.api.plugin.moved.PluginDescriptor;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.DeploymentModel;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedDeploymentModelException;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -22,33 +22,33 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Given a {@link PluginDescriptor} this class will generate an {@link DeploymentModel} from it.
+ * Given a {@link PluginDescriptor} this class will generate an {@link ClassloaderModel} from it.
  *
- * //TODO MULE-10785 move this one to the DeploymentModel that already exist
+ * //TODO MULE-10785 move this one to the ClassloaderModel that already exist
  *
  * @since 1.0
  */
 class FolderDeploymentModelLoader {
 
-  public DeploymentModel load(Plugin plugin) throws MalformedDeploymentModelException {
+  public ClassloaderModel load(Plugin plugin) throws MalformedClassloaderModelException {
     //TODO MULE-10785 code this one
     throw new RuntimeException("NOT YET IMPLEMENTED");
-    //return new DefaultDeploymentModel(getUrls(getPluginLocation(plugin)));
+    //return new DefaultClassloaderModel(getUrls(getPluginLocation(plugin)));
   }
 
-  private File getPluginLocation(Plugin plugin) throws MalformedDeploymentModelException {
+  private File getPluginLocation(Plugin plugin) throws MalformedClassloaderModelException {
     File pluginFolder;
     try {
       pluginFolder = new File(plugin.getLocation().toURI());
     } catch (URISyntaxException e) {
-      throw new MalformedDeploymentModelException(format("Can't create file from plugin [%s], location [%s]",
-                                                         plugin.getPluginDescriptor().getName(), plugin.getLocation()),
-                                                  e);
+      throw new MalformedClassloaderModelException(format("Can't create file from plugin [%s], location [%s]",
+                                                          plugin.getPluginDescriptor().getName(), plugin.getLocation()),
+                                                   e);
     }
     return pluginFolder;
   }
 
-  private URL[] getUrls(File pluginFolder) throws MalformedDeploymentModelException {
+  private URL[] getUrls(File pluginFolder) throws MalformedClassloaderModelException {
     List<File> files = new ArrayList<>();
     File classesFolder = new File(pluginFolder, "classes");
     if (classesFolder.exists() && classesFolder.isDirectory()) {
@@ -64,8 +64,8 @@ class FolderDeploymentModelLoader {
       try {
         urls[i] = files.get(i).toURI().toURL();
       } catch (MalformedURLException e) {
-        throw new MalformedDeploymentModelException("Failed to create the URL",
-                                                    e);
+        throw new MalformedClassloaderModelException("Failed to create the URL",
+                                                     e);
       }
     }
     return urls;

@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @since 4.0
  */
-public interface DeploymentModel {
+public interface ClassloaderModel {
 
   /**
    * @return the location of the /classes within the plugin's folder, {@link Optional#empty()} otherwise.

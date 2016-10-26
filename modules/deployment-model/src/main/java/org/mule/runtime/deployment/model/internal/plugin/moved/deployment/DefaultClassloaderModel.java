@@ -7,7 +7,7 @@
 package org.mule.runtime.deployment.model.internal.plugin.moved.deployment;
 
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.ArtifactDependency;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.DeploymentModel;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -15,19 +15,19 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Default implementation of {@link DeploymentModel}
+ * Default implementation of {@link ClassloaderModel}
  *
  * @since 4.0
  */
-public class DefaultDeploymentModel implements DeploymentModel {
+public class DefaultClassloaderModel implements ClassloaderModel {
 
   private Optional<URL> runtimeClasses = Optional.empty();
   private Set<String> exportedPackages = new HashSet<>();
   private Set<String> exportedResources = new HashSet<>();
   private Set<ArtifactDependency> dependencies = new HashSet<>();
 
-  public DefaultDeploymentModel(Optional<URL> runtimeClasses, Set<String> exportedPackages, Set<String> exportedResources,
-                                Set<ArtifactDependency> dependencies) {
+  public DefaultClassloaderModel(Optional<URL> runtimeClasses, Set<String> exportedPackages, Set<String> exportedResources,
+                                 Set<ArtifactDependency> dependencies) {
     this.runtimeClasses = runtimeClasses;
     this.exportedPackages = exportedPackages;
     this.exportedResources = exportedResources;

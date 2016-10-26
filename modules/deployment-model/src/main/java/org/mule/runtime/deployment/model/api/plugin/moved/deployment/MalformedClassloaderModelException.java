@@ -7,17 +7,17 @@
 package org.mule.runtime.deployment.model.api.plugin.moved.deployment;
 
 /**
- * Typed exception thrown when creating a DeploymentModel if it's malformed.
+ * Typed exception thrown when creating a ClassloaderModel if it's malformed.
  *
  * @since 4.0
  */
-public class MalformedDeploymentModelException extends Exception {
+public class MalformedClassloaderModelException extends Exception {
 
-  public MalformedDeploymentModelException(String message, Throwable cause) {
+  public MalformedClassloaderModelException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public MalformedDeploymentModelException(String message) {
+  public MalformedClassloaderModelException(String message) {
     super(message);
   }
 }

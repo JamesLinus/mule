@@ -16,9 +16,9 @@ import static org.mule.runtime.module.artifact.classloader.DefaultArtifactClassL
 
 import org.mule.runtime.deployment.model.api.plugin.moved.MalformedPluginException;
 import org.mule.runtime.deployment.model.api.plugin.moved.Plugin;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.DeploymentModel;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedDeploymentModelException;
-import org.mule.runtime.deployment.model.internal.plugin.moved.deployment.DeploymentModelLoader;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
+import org.mule.runtime.deployment.model.internal.plugin.moved.deployment.ClassloaderModelLoader;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderFilter;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderFilterFactory;
 import org.mule.runtime.module.artifact.descriptor.ArtifactDescriptorCreateException;
@@ -57,7 +57,7 @@ public class ArtifactPluginDescriptorFactory implements ArtifactDescriptorFactor
   @Override
   public ArtifactPluginDescriptor create(File pluginFolder) throws ArtifactDescriptorCreateException {
     //TODO MULE-10785 the PluginDescriptor should be the new ArtifactPluginDescriptor commented out as it forces to be a META-INF/mule-plugin.json file
-    //DeploymentModel deploymentModel = getDeploymentModel(pluginFolder);
+    //ClassloaderModel deploymentModel = getDeploymentModel(pluginFolder);
 
     final String pluginName = pluginFolder.getName();
     final ArtifactPluginDescriptor descriptor = new ArtifactPluginDescriptor(pluginName);
@@ -103,7 +103,7 @@ public class ArtifactPluginDescriptorFactory implements ArtifactDescriptorFactor
     return descriptor;
   }
 
-  private DeploymentModel getDeploymentModel(File pluginFolder) {
+  private ClassloaderModel getDeploymentModel(File pluginFolder) {
     Plugin plugin;
     try {
       if (pluginFolder.getName().endsWith("zip")) {
@@ -116,15 +116,15 @@ public class ArtifactPluginDescriptorFactory implements ArtifactDescriptorFactor
                                                          pluginFolder.getName()),
                                                   e);
     }
-    DeploymentModel deploymentModel;
+    ClassloaderModel classloaderModel;
     try {
-      deploymentModel = DeploymentModelLoader.from(plugin);
-    } catch (MalformedDeploymentModelException e) {
+      classloaderModel = ClassloaderModelLoader.from(plugin);
+    } catch (MalformedClassloaderModelException e) {
       throw new ArtifactDescriptorCreateException(format("There was an issue loading the deployment model for %s",
                                                          plugin.getPluginDescriptor().getName()),
                                                   e);
     }
-    return deploymentModel;
+    return classloaderModel;
   }
 
   private Set<String> getPluginDependencies(String pluginDependencies) {

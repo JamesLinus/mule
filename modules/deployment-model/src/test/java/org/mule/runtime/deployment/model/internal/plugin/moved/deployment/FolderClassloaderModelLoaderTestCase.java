@@ -11,7 +11,7 @@ import org.mule.runtime.deployment.model.api.plugin.moved.Plugin;
 
 import java.io.File;
 
-public class FolderDeploymentModelLoaderTestCase extends AbstractDeploymentModelLoaderTestCase {
+public class FolderClassloaderModelLoaderTestCase extends AbstractClassloaderModelLoaderTestCase {
 
   @Override
   protected String getRuntimeClasses() {

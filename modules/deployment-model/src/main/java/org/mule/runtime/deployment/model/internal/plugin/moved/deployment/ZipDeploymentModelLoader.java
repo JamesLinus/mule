@@ -9,8 +9,8 @@ package org.mule.runtime.deployment.model.internal.plugin.moved.deployment;
 import static java.lang.String.format;
 import org.mule.runtime.deployment.model.api.plugin.moved.Plugin;
 import org.mule.runtime.deployment.model.api.plugin.moved.PluginDescriptor;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.DeploymentModel;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedDeploymentModelException;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 import org.mule.runtime.module.artifact.net.MulePluginUrlStreamHandler;
 
 import java.io.IOException;
@@ -22,15 +22,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Given a {@link PluginDescriptor} this class will generate an {@link DeploymentModel} from it.
+ * Given a {@link PluginDescriptor} this class will generate an {@link ClassloaderModel} from it.
  *
- * //TODO MULE-10785 move this one to the DeploymentModel that already exist
+ * //TODO MULE-10785 move this one to the ClassloaderModel that already exist
  * @since 4.0
  */
 class ZipDeploymentModelLoader {
 
 
-  public DeploymentModel load(Plugin plugin) throws MalformedDeploymentModelException {
+  public ClassloaderModel load(Plugin plugin) throws MalformedClassloaderModelException {
     try {
       boolean classesPresent = false;
       List<URL> urls = new ArrayList<>();
@@ -48,11 +48,11 @@ class ZipDeploymentModelLoader {
         urls.add(0, assembleFor(plugin, "classes"));
       }
       throw new RuntimeException("NOT YET IMPLEMENTED");
-      //return new DefaultDeploymentModel(urls.toArray(new URL[urls.size()]));
+      //return new DefaultClassloaderModel(urls.toArray(new URL[urls.size()]));
     } catch (IOException e) {
-      throw new MalformedDeploymentModelException(format("There was a problem while unziping [%s]",
-                                                         plugin.getPluginDescriptor().getName()),
-                                                  e);
+      throw new MalformedClassloaderModelException(format("There was a problem while unziping [%s]",
+                                                          plugin.getPluginDescriptor().getName()),
+                                                   e);
     }
   }
 

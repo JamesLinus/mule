@@ -14,7 +14,7 @@ import org.mule.runtime.api.meta.MuleVersion;
 import org.mule.runtime.deployment.model.api.plugin.moved.Descriptor;
 import org.mule.runtime.deployment.model.api.plugin.moved.MalformedPluginException;
 import org.mule.runtime.deployment.model.api.plugin.moved.PluginDescriptor;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedDeploymentModelException;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,7 +55,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
 
   @Test
   public void testSuccessfulDeploymentModelClasses()
-      throws MalformedPluginException, MalformedDeploymentModelException {
+      throws MalformedPluginException, MalformedClassloaderModelException {
     String pluginFolder = "plugin-classes";
     PluginDescriptor pluginDescriptor = getSuccessfulPlugin(pluginFolder);
 
@@ -65,7 +65,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
 
   @Test
   public void testSuccessfulDeploymentModelDependencies()
-      throws MalformedPluginException, MalformedDeploymentModelException {
+      throws MalformedPluginException, MalformedClassloaderModelException {
     String pluginFolder = "plugin-dependencies";
     PluginDescriptor pluginDescriptor = getSuccessfulPlugin(pluginFolder);
 
@@ -75,7 +75,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
 
   @Test
   public void testSuccessfulDeploymentModelDependenciesNoExportedPackages()
-      throws MalformedPluginException, MalformedDeploymentModelException {
+      throws MalformedPluginException, MalformedClassloaderModelException {
     PluginDescriptor pluginDescriptor = getSuccessfulPlugin("plugin-dependencies-no-exportedPackages");
 
     assertClassloaderDescriptorJustResources(pluginDescriptor);
@@ -84,7 +84,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
 
   @Test
   public void testSuccessfulDeploymentModelDependenciesNoExportedPackagesAndNoExportedResources()
-      throws MalformedPluginException, MalformedDeploymentModelException {
+      throws MalformedPluginException, MalformedClassloaderModelException {
     PluginDescriptor pluginDescriptor =
         getSuccessfulPlugin("plugin-dependencies-no-exportedPackages-and-no-exportedResources");
 
@@ -94,7 +94,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
 
   @Test
   public void testSuccessfulDeploymentModelDependenciesNoExportedResources()
-      throws MalformedPluginException, MalformedDeploymentModelException {
+      throws MalformedPluginException, MalformedClassloaderModelException {
     PluginDescriptor pluginDescriptor = getSuccessfulPlugin("plugin-dependencies-no-exportedResources");
 
     assertClassloaderDescriptorJustPackages(pluginDescriptor);
@@ -102,7 +102,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
   }
 
   @Test
-  public void testSuccessfulDeploymentModelEmpty() throws MalformedPluginException, MalformedDeploymentModelException {
+  public void testSuccessfulDeploymentModelEmpty() throws MalformedPluginException, MalformedClassloaderModelException {
     PluginDescriptor pluginDescriptor = getSuccessfulPlugin("plugin-empty");
 
     assertClassloaderDescriptor(pluginDescriptor);
@@ -110,7 +110,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
   }
 
   @Test
-  public void testSuccessfulDeploymentModelLibs() throws MalformedPluginException, MalformedDeploymentModelException {
+  public void testSuccessfulDeploymentModelLibs() throws MalformedPluginException, MalformedClassloaderModelException {
     String pluginFolder = "plugin-libs";
     PluginDescriptor pluginDescriptor = getSuccessfulPlugin(pluginFolder);
 
@@ -120,7 +120,7 @@ public abstract class SuccessfulAbstractPluginTestCase {
 
   @Test
   public void testSuccessfulDeploymentModelLibsAndClasses()
-      throws MalformedPluginException, MalformedDeploymentModelException {
+      throws MalformedPluginException, MalformedClassloaderModelException {
     String pluginFolder = "plugin-libs-and-classes";
     PluginDescriptor pluginDescriptor = getSuccessfulPlugin(pluginFolder);
 

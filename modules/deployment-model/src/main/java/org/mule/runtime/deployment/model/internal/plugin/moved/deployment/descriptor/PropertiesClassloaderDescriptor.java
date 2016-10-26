@@ -9,10 +9,10 @@ package org.mule.runtime.deployment.model.internal.plugin.moved.deployment.descr
 import static java.lang.String.format;
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.ArtifactDependency;
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.Scope;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.DeploymentModel;
-import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedDeploymentModelException;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
+import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 import org.mule.runtime.deployment.model.internal.plugin.moved.dependency.DefaultArtifactDependency;
-import org.mule.runtime.deployment.model.internal.plugin.moved.deployment.DefaultDeploymentModel;
+import org.mule.runtime.deployment.model.internal.plugin.moved.deployment.DefaultClassloaderModel;
 import org.mule.runtime.deployment.model.internal.plugin.moved.resource.URLPluginResourceLoader;
 import org.mule.runtime.module.artifact.net.MulePluginUrlStreamHandler;
 
@@ -44,7 +44,7 @@ public class PropertiesClassloaderDescriptor implements ClassloaderDescriptor {
   }
 
   @Override
-  public DeploymentModel load(URL location, Map<String, Object> attributes) throws MalformedDeploymentModelException {
+  public ClassloaderModel load(URL location, Map<String, Object> attributes) throws MalformedClassloaderModelException {
     Optional<URL> runtimeClasses = parseRuntimeClasses(location);
 
     Properties properties = getProperties(location);
@@ -53,31 +53,31 @@ public class PropertiesClassloaderDescriptor implements ClassloaderDescriptor {
     Set<String> exportedResources = getPackages(properties.getProperty("artifact.export.resources"));
     Set<ArtifactDependency> dependencies = getArtifactDependencies(properties);
 
-    return new DefaultDeploymentModel(runtimeClasses, exportedPackages, exportedResources, dependencies);
+    return new DefaultClassloaderModel(runtimeClasses, exportedPackages, exportedResources, dependencies);
   }
 
-  private Properties getProperties(URL location) throws MalformedDeploymentModelException {
+  private Properties getProperties(URL location) throws MalformedClassloaderModelException {
     Properties properties = new Properties();
     Optional<InputStream> propertiesInputStream = new URLPluginResourceLoader().loadResource(location, "plugin.properties");
     if (!propertiesInputStream.isPresent()) {
-      throw new MalformedDeploymentModelException(format("Couldn't find plugin.properties file in the plugin located at %s",
-                                                         location.toString()));
+      throw new MalformedClassloaderModelException(format("Couldn't find plugin.properties file in the plugin located at %s",
+                                                          location.toString()));
     }
     try {
       properties.load(propertiesInputStream.get());
     } catch (IOException e) {
-      throw new MalformedDeploymentModelException("There was an issue reading plugin.properties file", e);
+      throw new MalformedClassloaderModelException("There was an issue reading plugin.properties file", e);
     }
     return properties;
   }
 
-  private Optional<URL> parseRuntimeClasses(URL location) throws MalformedDeploymentModelException {
+  private Optional<URL> parseRuntimeClasses(URL location) throws MalformedClassloaderModelException {
     boolean isZip = location.getFile().endsWith(".zip");
     try {
       return Optional.of(isZip ? new URL(MulePluginUrlStreamHandler.PROTOCOL + ":" + location + "!/" + "classes" + "!/")
           : new URL(location, "classes"));
     } catch (MalformedURLException e) {
-      throw new MalformedDeploymentModelException("Cannot assembly /classes URL", e);
+      throw new MalformedClassloaderModelException("Cannot assembly /classes URL", e);
     }
   }
 
