@@ -20,7 +20,6 @@ import static org.mule.runtime.module.http.api.HttpHeaders.Values.CHUNKED;
 import org.mule.extension.http.api.HttpStreamingType;
 import org.mule.extension.http.api.listener.builder.HttpListenerResponseBuilder;
 import org.mule.runtime.api.message.MultiPartPayload;
-import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
@@ -66,7 +65,7 @@ public class HttpResponseFactory implements Startable {
   private HttpStreamingType responseStreaming = AUTO;
   private MuleContext muleContext;
   private boolean multipartEntityWithNoMultipartContentyTypeWarned;
-  private boolean mapPayloadButNoUrlEncodedContentyTypeWarned;
+  private boolean mapPayloadButNoUrlEncodedContentTypeWarned;
   private Transformer objectToByteArray;
 
   public HttpResponseFactory(HttpStreamingType responseStreaming, MuleContext muleContext) {
@@ -91,7 +90,6 @@ public class HttpResponseFactory implements Startable {
    */
   public HttpResponse create(HttpResponseBuilder responseBuilder,
                              HttpListenerResponseBuilder listenerResponseBuilder,
-                             DataType dataType,
                              boolean supportsTransferEncoding)
       throws MessagingException {
 
@@ -99,18 +97,18 @@ public class HttpResponseFactory implements Startable {
 
     final HttpResponseHeaderBuilder httpResponseHeaderBuilder = new HttpResponseHeaderBuilder();
 
-    for (String name : headers.keySet()) {
+    headers.forEach((key, value) -> {
       // For now, only support single headers
-      if (TRANSFER_ENCODING.equals(name) && !supportsTransferEncoding) {
+      if (TRANSFER_ENCODING.equals(key) && !supportsTransferEncoding) {
         logger.debug(
-                     "Client HTTP version is lower than 1.1 so the unsupported 'Transfer-Encoding' header has been removed and 'Content-Length' will be sent instead.");
+            "Client HTTP version is lower than 1.1 so the unsupported 'Transfer-Encoding' header has been removed and 'Content-Length' will be sent instead.");
       } else {
-        httpResponseHeaderBuilder.addHeader(name, headers.get(name));
+        httpResponseHeaderBuilder.addHeader(key, value);
       }
-    }
+    });
 
-    if (httpResponseHeaderBuilder.getContentType() == null && !MediaType.ANY.matches(dataType.getMediaType())) {
-      httpResponseHeaderBuilder.addHeader(CONTENT_TYPE, dataType.getMediaType().toString());
+    if (httpResponseHeaderBuilder.getContentType() == null && !MediaType.ANY.matches(listenerResponseBuilder.getMediaType())) {
+      httpResponseHeaderBuilder.addHeader(CONTENT_TYPE, listenerResponseBuilder.getMediaType().toString());
     }
 
     final String configuredContentType = httpResponseHeaderBuilder.getContentType();
@@ -129,7 +127,7 @@ public class HttpResponseFactory implements Startable {
       } else if (!configuredContentType.startsWith(HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED.toRfcString())) {
         warnMapPayloadButNoUrlEncodedContentType(httpResponseHeaderBuilder.getContentType());
       }
-      httpEntity = createUrlEncodedEntity(dataType, (Map) payload);
+      httpEntity = createUrlEncodedEntity(listenerResponseBuilder.getMediaType(), (Map) payload);
       if (responseStreaming == ALWAYS && supportsTransferEncoding) {
         setupChunkedEncoding(httpResponseHeaderBuilder);
       } else {
@@ -232,12 +230,12 @@ public class HttpResponseFactory implements Startable {
     return String.format("%s; boundary=%s", HttpHeaders.Values.MULTIPART_FORM_DATA, UUID.getUUID());
   }
 
-  private HttpEntity createUrlEncodedEntity(DataType dataType, Map payload) {
+  private HttpEntity createUrlEncodedEntity(MediaType mediaType, Map payload) {
     final Map mapPayload = payload;
     HttpEntity entity = new EmptyHttpEntity();
     if (!mapPayload.isEmpty()) {
       String encodedBody;
-      final Charset encoding = dataType.getMediaType().getCharset().get();
+      final Charset encoding = mediaType.getCharset().get();
       if (mapPayload instanceof ParameterMap) {
         encodedBody = HttpParser.encodeString(encoding, ((ParameterMap) mapPayload).toListValuesMap());
       } else {
@@ -249,19 +247,19 @@ public class HttpResponseFactory implements Startable {
   }
 
   private void warnMapPayloadButNoUrlEncodedContentType(String contentType) {
-    if (!mapPayloadButNoUrlEncodedContentyTypeWarned) {
+    if (!mapPayloadButNoUrlEncodedContentTypeWarned) {
       logger.warn(String.format(
-                                "Payload is a Map which will be used to generate an url encoded http body but Contenty-Type specified is %s and not %s.",
-                                contentType, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED));
-      mapPayloadButNoUrlEncodedContentyTypeWarned = true;
+          "Payload is a Map which will be used to generate an url encoded http body but Contenty-Type specified is %s and not %s.",
+          contentType, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED));
+      mapPayloadButNoUrlEncodedContentTypeWarned = true;
     }
   }
 
   private void warnNoMultipartContentTypeButMultipartEntity(String contentType) {
     if (!multipartEntityWithNoMultipartContentyTypeWarned) {
       logger.warn(String.format(
-                                "Sending http response with Content-Type %s but the message has attachment and a multipart entity is generated.",
-                                contentType));
+          "Sending http response with Content-Type %s but the message has attachment and a multipart entity is generated.",
+          contentType));
       multipartEntityWithNoMultipartContentyTypeWarned = true;
     }
   }

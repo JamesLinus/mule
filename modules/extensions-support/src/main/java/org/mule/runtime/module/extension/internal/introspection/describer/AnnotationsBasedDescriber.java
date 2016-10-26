@@ -323,6 +323,7 @@ public final class AnnotationsBasedDescriber implements Describer {
     final Optional<MethodElement> onResponseMethod = sourceType.getOnResponseMethod();
     final Optional<MethodElement> onErrorMethod = sourceType.getOnErrorMethod();
 
+    //TODO: MULE-9220 add syntax validator to check that none of these use @UseConfig or @Connection
     declareSourceCallbackParameters(source, onResponseMethod, ON_SUCCESS);
     declareSourceCallbackParameters(source, onErrorMethod, ON_ERROR);
 

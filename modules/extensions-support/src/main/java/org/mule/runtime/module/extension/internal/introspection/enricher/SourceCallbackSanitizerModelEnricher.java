@@ -63,8 +63,9 @@ public final class SourceCallbackSanitizerModelEnricher implements ModelEnricher
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof ParameterWrapper) {
-        ParameterDeclaration other = (ParameterDeclaration) obj;
-        return parameter.getName().equals(other.getName()) && getType(parameter.getType()).equals(getType(other.getType()));
+        ParameterWrapper other = (ParameterWrapper) obj;
+        return parameter.getName().equals(other.parameter.getName()) && getType(parameter.getType())
+            .equals(getType(other.parameter.getType()));
       }
 
       return false;

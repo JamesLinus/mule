@@ -7,6 +7,7 @@
 package org.mule.extension.http.api.listener.builder;
 
 import org.mule.extension.http.api.HttpMessageBuilder;
+import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.param.Optional;
@@ -49,6 +50,8 @@ public abstract class HttpListenerResponseBuilder extends HttpMessageBuilder {
 
   public abstract Object getBody();
 
+  public abstract MediaType getMediaType();
+
   public Integer getStatusCode() {
     return statusCode;
   }
@@ -60,5 +63,4 @@ public abstract class HttpListenerResponseBuilder extends HttpMessageBuilder {
   public Map<String, String> getHeaders() {
     return headersRef;
   }
-
 }

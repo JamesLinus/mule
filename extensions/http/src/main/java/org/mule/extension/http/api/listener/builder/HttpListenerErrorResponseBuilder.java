@@ -6,6 +6,8 @@
  */
 package org.mule.extension.http.api.listener.builder;
 
+import static org.mule.runtime.api.metadata.MediaType.ANY;
+import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
@@ -28,11 +30,23 @@ public class HttpListenerErrorResponseBuilder extends HttpListenerResponseBuilde
   @XmlHints(allowReferences = false)
   private Object body;
 
+  @Parameter
+  @Optional(defaultValue = "#[error.errorMessage.payload.dataType.mimeType]")
+  private MediaType mediaType = ANY;
+
   /**
    * {@inheritDoc}
    */
   @Override
   public Object getBody() {
     return body;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public MediaType getMediaType() {
+    return mediaType;
   }
 }

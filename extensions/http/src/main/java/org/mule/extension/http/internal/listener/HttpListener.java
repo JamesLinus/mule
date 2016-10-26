@@ -30,7 +30,6 @@ import org.mule.extension.http.internal.listener.server.HttpListenerConfig;
 import org.mule.runtime.api.message.Error;
 import org.mule.runtime.api.message.ErrorType;
 import org.mule.runtime.api.message.Message;
-import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
@@ -152,7 +151,6 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
   @OnSuccess
   public void onSuccess(@Optional @DisplayName(RESPONSE_SETTINGS) @Placement(
       group = RESPONSE_SETTINGS) HttpListenerSuccessResponseBuilder responseBuilder,
-                        DataType dataType,
                         SourceCallbackContext callbackContext) {
 
     if (responseBuilder == null) {
@@ -160,7 +158,7 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     }
 
     HttpResponseContext context = callbackContext.getVariable("responseContext");
-    HttpResponse httpResponse = buildResponse(responseBuilder, dataType, context.isSupportStreaming());
+    HttpResponse httpResponse = buildResponse(responseBuilder, context.isSupportStreaming());
     final HttpResponseReadyCallback responseCallback = context.getResponseCallback();
     responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
   }
@@ -195,8 +193,7 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     HttpResponse response;
     try {
       response = responseFactory
-          .create(failureResponseBuilder, errorResponseBuilder, error.getErrorMessage().getPayload().getDataType(),
-                  context.isSupportStreaming());
+          .create(failureResponseBuilder, errorResponseBuilder, context.isSupportStreaming());
     } catch (MessagingException e) {
       response = new DefaultHttpResponse(new ResponseStatus(500, "Server error"), new MultiValueMap(),
                                          new EmptyHttpEntity());
@@ -310,20 +307,18 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     // return muleEvent;
   }
 
-  protected HttpResponse buildResponse(HttpListenerSuccessResponseBuilder listenerResponseBuilder, DataType dataType,
-                                       boolean supportStreaming) {
+  protected HttpResponse buildResponse(HttpListenerSuccessResponseBuilder listenerResponseBuilder, boolean supportStreaming) {
 
     HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
     addThrottlingHeaders(responseBuilder);
-    return doBuildResponse(responseBuilder, listenerResponseBuilder, dataType, supportStreaming);
+    return doBuildResponse(responseBuilder, listenerResponseBuilder, supportStreaming);
   }
 
   protected HttpResponse doBuildResponse(HttpResponseBuilder responseBuilder,
                                          HttpListenerSuccessResponseBuilder listenerResponseBuilder,
-                                         DataType dataType,
                                          boolean supportsStreaming) {
     try {
-      return responseFactory.create(responseBuilder, listenerResponseBuilder, dataType, supportsStreaming);
+      return responseFactory.create(responseBuilder, listenerResponseBuilder, supportsStreaming);
     } catch (Exception e) {
       return buildErrorResponse();
     }

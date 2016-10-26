@@ -11,6 +11,7 @@ import static org.mule.runtime.module.extension.internal.introspection.describer
 import static org.mule.runtime.module.extension.internal.introspection.describer.MuleExtensionAnnotationParser.toMap;
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.isParameterContainer;
 import org.mule.metadata.java.api.JavaTypeLoader;
+import org.mule.runtime.api.message.Error;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.meta.model.ComponentModel;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
@@ -25,6 +26,7 @@ import org.mule.runtime.module.extension.internal.runtime.resolver.ArgumentResol
 import org.mule.runtime.module.extension.internal.runtime.resolver.ByParameterNameArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ConfigurationArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ConnectionArgumentResolver;
+import org.mule.runtime.module.extension.internal.runtime.resolver.ErrorArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.EventArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.MessageArgumentResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ParameterGroupArgumentResolver;
@@ -51,6 +53,7 @@ public final class MethodArgumentResolverDelegate implements ArgumentResolverDel
   private static final ArgumentResolver<Object> CONNECTOR_ARGUMENT_RESOLVER = new ConnectionArgumentResolver();
   private static final ArgumentResolver<Message> MESSAGE_ARGUMENT_RESOLVER = new MessageArgumentResolver();
   private static final ArgumentResolver<Event> EVENT_ARGUMENT_RESOLVER = new EventArgumentResolver();
+  private static final ArgumentResolver<Error> ERROR_ARGUMENT_RESOLVER = new ErrorArgumentResolver();
 
 
   private final Method method;
@@ -96,6 +99,8 @@ public final class MethodArgumentResolverDelegate implements ArgumentResolverDel
         argumentResolver = EVENT_ARGUMENT_RESOLVER;
       } else if (Message.class.isAssignableFrom(parameterType)) {
         argumentResolver = MESSAGE_ARGUMENT_RESOLVER;
+      } else if (Error.class.isAssignableFrom(parameterType)) {
+        argumentResolver = ERROR_ARGUMENT_RESOLVER;
       } else if (isParameterContainer(annotations.keySet(), typeLoader.load(parameterType))) {
         argumentResolver = parameterGroupResolvers.get(parameters[i]);
       } else if (ParameterResolver.class.isAssignableFrom(parameterType)) {

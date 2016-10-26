@@ -24,10 +24,10 @@ public interface SourceElement extends ParameterizableTypeElement {
    */
   List<Type> getSuperClassGenerics();
 
-  //TODO: MULE-9220
+  //TODO: MULE-9220 not more than one
   Optional<MethodElement> getOnResponseMethod();
 
-  //TODO: MULE-9220
+  //TODO: MULE-9220 not more than one
   Optional<MethodElement> getOnErrorMethod();
 
 }

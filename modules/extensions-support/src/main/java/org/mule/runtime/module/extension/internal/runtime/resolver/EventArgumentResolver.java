@@ -25,7 +25,7 @@ public final class EventArgumentResolver implements ArgumentResolver<Event> {
    * @throws ClassCastException if {@code operationContext} is not an {@link ExecutionContextAdapter}
    */
   @Override
-  public Event resolve(ExecutionContext operationContext) {
-    return ((ExecutionContextAdapter) operationContext).getEvent();
+  public Event resolve(ExecutionContext executionContext) {
+    return ((ExecutionContextAdapter) executionContext).getEvent();
   }
 }

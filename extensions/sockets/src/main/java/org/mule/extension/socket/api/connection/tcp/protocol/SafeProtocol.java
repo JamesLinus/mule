@@ -41,18 +41,9 @@ public class SafeProtocol extends AbstractByteProtocol {
   @Optional(defaultValue = "-1")
   private int maxMessageLeght = NO_MAX_LENGTH;
 
-  /**
-   * Indicates if the data to transfer is just the Payload or the entire Mule Message
-   */
-  @Parameter
-  @Optional(defaultValue = "true")
-  private boolean payloadOnly = true;
-
   public SafeProtocol() {
     super(false);
-    LengthProtocol protocol = new LengthProtocol();
-    protocol.setPayloadOnly(payloadOnly);
-    delegate = protocol;
+    delegate = new LengthProtocol();
   }
 
   /**

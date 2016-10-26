@@ -17,6 +17,7 @@ import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
+import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -30,8 +31,12 @@ import java.util.Set;
  */
 public interface ExtensionParameter extends WithType, WithAnnotations, NamedObject, WithAlias, WithOwner {
 
-  Set<Class<?>> IMPLICIT_ARGUMENT_TYPES = ImmutableSet.<Class<?>>builder().add(Event.class).add(Message.class)
-      .add(InternalMessage.class).build();
+  Set<Class<?>> IMPLICIT_ARGUMENT_TYPES = ImmutableSet.<Class<?>>builder()
+      .add(Event.class)
+      .add(Message.class)
+      .add(InternalMessage.class)
+      .add(SourceCallbackContext.class)
+      .build();
 
   /**
    * @return A {@code boolean} indicating whether the parameter should be advertised and added as a {@link ParameterModel} in the
