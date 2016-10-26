@@ -69,7 +69,6 @@ class DefaultSourceCallback<T, A extends Attributes> implements SourceCallback<T
 
     public SourceCallback<T, A> build() {
       checkArgument(product.listener, "listener");
-      checkArgument(product.configName, "configName");
       checkArgument(product.flowConstruct, "flowConstruct");
       checkArgument(product.exceptionCallback, "exceptionCallback");
       checkArgument(product.messageProcessingManager, "messageProcessingManager");

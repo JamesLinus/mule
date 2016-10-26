@@ -7,14 +7,13 @@
 package org.mule.runtime.module.extension.internal.config.dsl.source;
 
 import static java.lang.String.format;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.mule.runtime.core.api.config.ThreadingProfile.DEFAULT_THREADING_PROFILE;
 import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.module.extension.internal.model.property.CallbackParameterModelProperty.CallbackPhase.ON_ERROR;
 import static org.mule.runtime.module.extension.internal.model.property.CallbackParameterModelProperty.CallbackPhase.ON_SUCCESS;
 import org.mule.runtime.api.meta.model.ExtensionModel;
+import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.api.meta.model.source.SourceModel;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleException;
@@ -41,7 +40,7 @@ import com.google.common.base.Joiner;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
@@ -99,29 +98,24 @@ public class ExtensionSourceObjectFactory extends AbstractExtensionObjectFactory
   }
 
   private ResolverSet getNonCallbackParameters() {
-    return getSourceParameters(empty());
+    return getSourceParameters(p -> !p.getModelProperty(CallbackParameterModelProperty.class).isPresent());
   }
 
   private ResolverSet getCallbackParameters(CallbackPhase callbackPhase) {
-    return getSourceParameters(of(callbackPhase));
+    return getSourceParameters(p -> isOfCallbackPhase(p, callbackPhase));
   }
 
-  private ResolverSet getSourceParameters(Optional<CallbackPhase> callbackPhase) {
+  private boolean isOfCallbackPhase(ParameterModel parameter, CallbackPhase callbackPhase) {
+    return parameter.getModelProperty(CallbackParameterModelProperty.class)
+        .map(property -> property.getCallbackPhase() == callbackPhase)
+        .orElse(false);
+  }
+
+  private ResolverSet getSourceParameters(Predicate<ParameterModel> predicate) {
     ResolverSet resolverSet = new ResolverSet();
     Map<String, Object> parameters = getParameters();
     sourceModel.getParameterModels().stream()
-        .filter(p -> {
-          final Optional<CallbackParameterModelProperty> property = p.getModelProperty(CallbackParameterModelProperty.class);
-          if (property.isPresent() != callbackPhase.isPresent()) {
-            return false;
-          }
-
-          if (property.isPresent() && callbackPhase.isPresent()) {
-            return property.get().getCallbackPhase() == callbackPhase.get();
-          }
-
-          return false;
-        })
+        .filter(predicate)
         .forEach(p -> {
           if (parameters.containsKey(p.getName())) {
             resolverSet.add(p.getName(), toValueResolver(parameters.get(p.getName())));

@@ -63,7 +63,7 @@ public class HeisenbergSource extends Source<String, Attributes> {
   }
 
   @OnSuccess
-  public void onResponse(Long payment) {
+  public void onResponse(@Optional(defaultValue = "#[payload]") Long payment) {
     heisenberg.setMoney(heisenberg.getMoney().add(BigDecimal.valueOf(payment)));
   }
 
