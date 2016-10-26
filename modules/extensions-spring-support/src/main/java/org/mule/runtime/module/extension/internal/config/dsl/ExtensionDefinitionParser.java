@@ -6,25 +6,9 @@
  */
 package org.mule.runtime.module.extension.internal.config.dsl;
 
-import static java.lang.String.format;
-import static org.mule.metadata.java.api.utils.JavaTypeUtils.getGenericTypeAt;
-import static org.mule.metadata.java.api.utils.JavaTypeUtils.getType;
-import static org.mule.metadata.internal.utils.MetadataTypeUtils.getDefaultValue;
-import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildCollectionConfiguration;
-import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildConfiguration;
-import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildMapConfiguration;
-import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromFixedValue;
-import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromMultipleDefinitions;
-import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromSimpleParameter;
-import static org.mule.runtime.config.spring.dsl.api.KeyAttributeDefinitionPair.newBuilder;
-import static org.mule.runtime.config.spring.dsl.api.TypeDefinition.fromMapEntryType;
-import static org.mule.runtime.config.spring.dsl.api.TypeDefinition.fromType;
-import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
-import static org.mule.runtime.extension.api.introspection.declaration.type.TypeUtils.getExpressionSupport;
-import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
-import static org.mule.runtime.api.meta.ExpressionSupport.REQUIRED;
-import static org.mule.runtime.extension.api.util.NameUtils.hyphenize;
-import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getMemberName;
+import com.google.common.collect.ImmutableList;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.mule.metadata.api.ClassTypeLoader;
 import org.mule.metadata.api.model.ArrayType;
 import org.mule.metadata.api.model.DateTimeType;
@@ -36,6 +20,10 @@ import org.mule.metadata.api.model.StringType;
 import org.mule.metadata.api.visitor.MetadataTypeVisitor;
 import org.mule.metadata.java.api.annotation.ClassInformationAnnotation;
 import org.mule.runtime.api.config.PoolingProfile;
+import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.api.meta.model.ExtensionModel;
+import org.mule.runtime.api.meta.model.ModelProperty;
+import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.config.spring.dsl.api.AttributeDefinition;
 import org.mule.runtime.config.spring.dsl.api.ComponentBuildingDefinition;
@@ -53,11 +41,7 @@ import org.mule.runtime.core.api.retry.RetryPolicyTemplate;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.TemplateParser;
 import org.mule.runtime.core.util.ValueHolder;
-import org.mule.runtime.api.meta.model.ExtensionModel;
-import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.extension.api.introspection.declaration.type.ExtensionsTypeLoaderFactory;
-import org.mule.runtime.api.meta.ExpressionSupport;
-import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.extension.xml.dsl.api.DslElementSyntax;
 import org.mule.runtime.extension.xml.dsl.api.resolver.DslSyntaxResolver;
 import org.mule.runtime.module.extension.internal.config.dsl.object.CharsetValueResolverParsingDelegate;
@@ -81,8 +65,8 @@ import org.mule.runtime.module.extension.internal.runtime.resolver.NestedProcess
 import org.mule.runtime.module.extension.internal.runtime.resolver.StaticValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.TypeSafeExpressionValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
-
-import com.google.common.collect.ImmutableList;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -104,10 +88,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
+import static java.lang.String.format;
+import static org.mule.metadata.internal.utils.MetadataTypeUtils.getDefaultValue;
+import static org.mule.metadata.java.api.utils.JavaTypeUtils.getGenericTypeAt;
+import static org.mule.metadata.java.api.utils.JavaTypeUtils.getType;
+import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
+import static org.mule.runtime.api.meta.ExpressionSupport.REQUIRED;
+import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildCollectionConfiguration;
+import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildConfiguration;
+import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildMapConfiguration;
+import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromFixedValue;
+import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromMultipleDefinitions;
+import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromSimpleParameter;
+import static org.mule.runtime.config.spring.dsl.api.KeyAttributeDefinitionPair.newBuilder;
+import static org.mule.runtime.config.spring.dsl.api.TypeDefinition.fromMapEntryType;
+import static org.mule.runtime.config.spring.dsl.api.TypeDefinition.fromType;
+import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
+import static org.mule.runtime.extension.api.introspection.declaration.type.TypeUtils.getExpressionSupport;
+import static org.mule.runtime.extension.api.util.NameUtils.hyphenize;
+import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getMemberName;
 
 /**
  * Base class for parsers delegates which generate {@link ComponentBuildingDefinition} instances for the specific components types
@@ -149,8 +148,8 @@ public abstract class ExtensionDefinitionParser {
    * Creates a new instance
    *
    * @param baseDefinitionBuilder a {@link Builder} used as a prototype to generate new defitintions
-   * @param dslSyntaxResolver     a {@link DslSyntaxResolver} instance associated with the {@link ExtensionModel} being parsed
-   * @param parsingContext        the {@link ExtensionParsingContext} in which {@code this} parser operates
+   * @param dslSyntaxResolver a {@link DslSyntaxResolver} instance associated with the {@link ExtensionModel} being parsed
+   * @param parsingContext the {@link ExtensionParsingContext} in which {@code this} parser operates
    */
   protected ExtensionDefinitionParser(Builder baseDefinitionBuilder, DslSyntaxResolver dslSyntaxResolver,
                                       ExtensionParsingContext parsingContext, MuleContext muleContext) {
@@ -269,7 +268,7 @@ public abstract class ExtensionDefinitionParser {
   /**
    * Registers a definition for a {@link ParameterModel} which represents a {@link DictionaryType}
    *
-   * @param parameter      a {@link ParameterModel}
+   * @param parameter a {@link ParameterModel}
    * @param dictionaryType a {@link DictionaryType}
    */
   protected void parseMapParameters(ParameterModel parameter, DictionaryType dictionaryType, DslElementSyntax paramDsl) {
@@ -280,12 +279,12 @@ public abstract class ExtensionDefinitionParser {
   /**
    * Registers a definition for a {@link ParameterModel} which represents a {@link DictionaryType}
    *
-   * @param key               the key that the parsed value should have on the parsed parameter's map
-   * @param name              the parameter's name
-   * @param dictionaryType    the parameter's {@link DictionaryType}
-   * @param defaultValue      the parameter's default value
+   * @param key the key that the parsed value should have on the parsed parameter's map
+   * @param name the parameter's name
+   * @param dictionaryType the parameter's {@link DictionaryType}
+   * @param defaultValue the parameter's default value
    * @param expressionSupport the parameter's {@link ExpressionSupport}
-   * @param required          whether the parameter is required
+   * @param required whether the parameter is required
    */
   protected void parseMapParameters(String key, String name, DictionaryType dictionaryType, Object defaultValue,
                                     ExpressionSupport expressionSupport, boolean required, DslElementSyntax paramDsl,
@@ -394,12 +393,12 @@ public abstract class ExtensionDefinitionParser {
   /**
    * Registers a definition for a {@link ParameterModel} which represents an {@link ArrayType}
    *
-   * @param key               the key that the parsed value should have on the parsed parameter's map
-   * @param name              the parameter's name
-   * @param arrayType         the parameter's {@link ArrayType}
-   * @param defaultValue      the parameter's default value
+   * @param key the key that the parsed value should have on the parsed parameter's map
+   * @param name the parameter's name
+   * @param arrayType the parameter's {@link ArrayType}
+   * @param defaultValue the parameter's default value
    * @param expressionSupport the parameter's {@link ExpressionSupport}
-   * @param required          whether the parameter is required
+   * @param required whether the parameter is required
    */
   protected void parseCollectionParameter(String key, String name, ArrayType arrayType, Object defaultValue,
                                           ExpressionSupport expressionSupport, boolean required, DslElementSyntax parameterDsl,
@@ -427,14 +426,28 @@ public abstract class ExtensionDefinitionParser {
 
       arrayType.getType().accept(new BasicTypeMetadataVisitor() {
 
-        @Override
-        protected void visitBasicType(MetadataType metadataType) {
+        private void addBasicTypeDefinition(MetadataType metadataType) {
           Builder itemDefinitionBuilder = baseDefinitionBuilder.copy().withIdentifier(itemIdentifier).withNamespace(itemNamespace)
               .withTypeDefinition(fromType(getType(metadataType)))
               .withTypeConverter(value -> resolverOf(name, metadataType, value, getDefaultValue(metadataType).orElse(null),
                                                      getExpressionSupport(metadataType), false, modelProperties));
 
           addDefinition(itemDefinitionBuilder.build());
+        }
+
+        @Override
+        protected void visitBasicType(MetadataType metadataType) {
+          addBasicTypeDefinition(metadataType);
+        }
+
+        @Override
+        public void visitDate(DateType dateType) {
+          addBasicTypeDefinition(dateType);
+        }
+
+        @Override
+        public void visitDateTime(DateTimeType dateTimeType) {
+          addBasicTypeDefinition(dateTimeType);
         }
 
         @Override
@@ -585,12 +598,12 @@ public abstract class ExtensionDefinitionParser {
   /**
    * Registers a definition for parsing the given {@code parameterModel} as an element attribute
    *
-   * @param key               the key that the parsed value should have on the parsed parameter's map
-   * @param name              the parameter's name
-   * @param type              the parameter's type
-   * @param defaultValue      the parameter's default value
+   * @param key the key that the parsed value should have on the parsed parameter's map
+   * @param name the parameter's name
+   * @param type the parameter's type
+   * @param defaultValue the parameter's default value
    * @param expressionSupport the parameter's {@link ExpressionSupport}
-   * @param required          whether the parameter is required or not
+   * @param required whether the parameter is required or not
    * @return an {@link AttributeDefinition.Builder}
    */
   protected AttributeDefinition.Builder parseAttributeParameter(String key, String name, MetadataType type, Object defaultValue,
@@ -626,13 +639,13 @@ public abstract class ExtensionDefinitionParser {
   /**
    * Registers a definition for a {@link ParameterModel} which represents an {@link ObjectType}
    *
-   * @param key               the key that the parsed value should have on the parsed parameter's map
-   * @param name              the parameter's name
-   * @param type              an {@link ObjectType}
-   * @param defaultValue      the parameter's default value
+   * @param key the key that the parsed value should have on the parsed parameter's map
+   * @param name the parameter's name
+   * @param type an {@link ObjectType}
+   * @param defaultValue the parameter's default value
    * @param expressionSupport the parameter's {@link ExpressionSupport}
-   * @param required          whether the parameter is required or not
-   * @param modelProperties   parameter's {@link ModelProperty}s
+   * @param required whether the parameter is required or not
+   * @param modelProperties parameter's {@link ModelProperty}s
    */
   protected void parseObjectParameter(String key, String name, ObjectType type, Object defaultValue,
                                       ExpressionSupport expressionSupport, boolean required, boolean acceptsReferences,

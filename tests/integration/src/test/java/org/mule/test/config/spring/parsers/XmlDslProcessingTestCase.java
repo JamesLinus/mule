@@ -6,16 +6,11 @@
  */
 package org.mule.test.config.spring.parsers;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertThat;
+import org.junit.Test;
 import org.mule.functional.junit4.FunctionalTestCase;
 import org.mule.test.config.spring.parsers.beans.ParameterAndChildElement;
-import org.mule.test.config.spring.parsers.beans.PojoWithSameTypeChildren;
 import org.mule.test.config.spring.parsers.beans.ParsersTestObject;
+import org.mule.test.config.spring.parsers.beans.PojoWithSameTypeChildren;
 import org.mule.test.config.spring.parsers.beans.SimplePojo;
 
 import java.util.Collection;
@@ -23,10 +18,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hamcrest.core.Is;
-import org.junit.Test;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertThat;
 
 public class XmlDslProcessingTestCase extends FunctionalTestCase {
 
