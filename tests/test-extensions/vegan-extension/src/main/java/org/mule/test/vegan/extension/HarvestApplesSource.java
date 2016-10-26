@@ -36,6 +36,5 @@ public class HarvestApplesSource extends Source<Apple, Attributes> {
   }
 
   @Override
-  public void onStop() {
-  }
+  public void onStop() {}
 }

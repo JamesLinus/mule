@@ -89,7 +89,8 @@ public class ExtensionsConnectionAdapter {
   }
 
   private <T extends TransactionalConnection> ConnectionHandler<T> getTransactedConnectionHandler(
-      ExecutionContextAdapter<ComponentModel> executionContext, TransactionConfig transactionConfig)
+                                                                                                  ExecutionContextAdapter<ComponentModel> executionContext,
+                                                                                                  TransactionConfig transactionConfig)
       throws ConnectionException, TransactionException {
 
     if (transactionConfig.getAction() == ACTION_NOT_SUPPORTED) {
@@ -98,9 +99,9 @@ public class ExtensionsConnectionAdapter {
 
     ConfigurationInstance configuration = executionContext.getConfiguration()
         .orElseThrow(() -> new IllegalStateException(format(
-            "Operation '%s' of extension '%s' cannot participate in a transaction because it doesn't have a config",
-            executionContext.getComponentModel().getName(),
-            executionContext.getExtensionModel().getName())));
+                                                            "Operation '%s' of extension '%s' cannot participate in a transaction because it doesn't have a config",
+                                                            executionContext.getComponentModel().getName(),
+                                                            executionContext.getExtensionModel().getName())));
 
 
     final ExtensionTransactionKey txKey = new ExtensionTransactionKey(configuration);
@@ -122,12 +123,13 @@ public class ExtensionsConnectionAdapter {
           return new TransactionalConnectionHandler(txResource);
         } else if (transactionConfig.isTransacted()) {
           throw new TransactionException(
-              createStaticMessage(format("%s '%s' of extension '%s' is transactional but current transaction doesn't "
+                                         createStaticMessage(format("%s '%s' of extension '%s' is transactional but current transaction doesn't "
                                              + "support connections of type '%s'",
-                                         getComponentModelTypeName(executionContext.getComponentModel()),
-                                         executionContext.getComponentModel().getName(),
-                                         executionContext.getExtensionModel().getName(),
-                                         connectionHandler.getClass().getName())));
+                                                                    getComponentModelTypeName(executionContext
+                                                                        .getComponentModel()),
+                                                                    executionContext.getComponentModel().getName(),
+                                                                    executionContext.getExtensionModel().getName(),
+                                                                    connectionHandler.getClass().getName())));
         }
       } finally {
         if (!bound) {

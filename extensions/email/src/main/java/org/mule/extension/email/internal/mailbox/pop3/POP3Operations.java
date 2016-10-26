@@ -55,7 +55,7 @@ public class POP3Operations {
                                                             @Optional(defaultValue = INBOX_FOLDER) String mailboxFolder,
                                                             @DisplayName("Matcher") @Optional POP3EmailPredicateBuilder pop3Matcher,
                                                             @Optional(
-                                                                         defaultValue = "false") boolean deleteAfterRetrieve) {
+                                                                defaultValue = "false") boolean deleteAfterRetrieve) {
     List<Result<Object, POP3EmailAttributes>> emails = listCommand.list(config, connection, mailboxFolder, pop3Matcher);
     if (deleteAfterRetrieve) {
       emails.forEach(e -> {

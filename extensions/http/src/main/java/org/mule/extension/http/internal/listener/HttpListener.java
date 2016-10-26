@@ -150,8 +150,8 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
   private List<ErrorType> knownErrors;
 
   @OnSuccess
-  public void onSuccess(@Optional @DisplayName(RESPONSE_SETTINGS) @Placement(group = RESPONSE_SETTINGS)
-                            HttpListenerSuccessResponseBuilder responseBuilder,
+  public void onSuccess(@Optional @DisplayName(RESPONSE_SETTINGS) @Placement(
+      group = RESPONSE_SETTINGS) HttpListenerSuccessResponseBuilder responseBuilder,
                         DataType dataType,
                         SourceCallbackContext callbackContext) {
 
@@ -159,15 +159,15 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
       responseBuilder = new HttpListenerSuccessResponseBuilder();
     }
 
-    HttpResponseContext context = callbackContext.getParameter("responseContext");
+    HttpResponseContext context = callbackContext.getVariable("responseContext");
     HttpResponse httpResponse = buildResponse(responseBuilder, dataType, context.isSupportStreaming());
     final HttpResponseReadyCallback responseCallback = context.getResponseCallback();
     responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
   }
 
   @OnError
-  public void onError(@Optional @DisplayName(ERROR_RESPONSE_SETTINGS) @Placement(group = ERROR_RESPONSE_SETTINGS)
-                          HttpListenerErrorResponseBuilder errorResponseBuilder,
+  public void onError(@Optional @DisplayName(ERROR_RESPONSE_SETTINGS) @Placement(
+      group = ERROR_RESPONSE_SETTINGS) HttpListenerErrorResponseBuilder errorResponseBuilder,
                       SourceCallbackContext callbackContext,
                       Error error) {
 
@@ -190,12 +190,13 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
     }
 
     addThrottlingHeaders(failureResponseBuilder);
-    HttpResponseContext context = callbackContext.getParameter("responseContext");
+    HttpResponseContext context = callbackContext.getVariable("responseContext");
 
     HttpResponse response;
     try {
       response = responseFactory
-          .create(failureResponseBuilder, errorResponseBuilder, error.getErrorMessage().getPayload().getDataType(), context.isSupportStreaming());
+          .create(failureResponseBuilder, errorResponseBuilder, error.getErrorMessage().getPayload().getDataType(),
+                  context.isSupportStreaming());
     } catch (MessagingException e) {
       response = new DefaultHttpResponse(new ResponseStatus(500, "Server error"), new MultiValueMap(),
                                          new EmptyHttpEntity());
@@ -253,7 +254,7 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
           responseContext.setResponseCallback(responseCallback);
 
           SourceCallbackContext context = null;
-          context.addParameter("responseContext", responseContext);
+          context.addVariable("responseContext", responseContext);
 
           sourceCallback.handle(createResult(requestContext), context);
         } catch (HttpRequestParsingException | IllegalArgumentException e) {
@@ -270,23 +271,22 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
       private void sendErrorResponse(final HttpConstants.HttpStatus status, String message,
                                      HttpResponseReadyCallback responseCallback) {
         responseCallback.responseReady(new HttpResponseBuilder()
-                                           .setStatusCode(status.getStatusCode())
-                                           .setReasonPhrase(status.getReasonPhrase())
-                                           .setEntity(new ByteArrayHttpEntity(message.getBytes()))
-                                           .build(), new ResponseStatusCallback() {
+            .setStatusCode(status.getStatusCode())
+            .setReasonPhrase(status.getReasonPhrase())
+            .setEntity(new ByteArrayHttpEntity(message.getBytes()))
+            .build(), new ResponseStatusCallback() {
 
-          @Override
-          public void responseSendFailure(Throwable exception) {
-            LOGGER.warn("Error while sending {} response {}", status.getStatusCode(), exception.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-              LOGGER.debug("Exception thrown", exception);
-            }
-          }
+              @Override
+              public void responseSendFailure(Throwable exception) {
+                LOGGER.warn("Error while sending {} response {}", status.getStatusCode(), exception.getMessage());
+                if (LOGGER.isDebugEnabled()) {
+                  LOGGER.debug("Exception thrown", exception);
+                }
+              }
 
-          @Override
-          public void responseSendSuccessfully() {
-          }
-        });
+              @Override
+              public void responseSendSuccessfully() {}
+            });
       }
     };
   }
@@ -389,7 +389,7 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
         if (uriParamNames.contains(uriParamName)) {
           // TODO: MULE-8946 This should throw a MuleException
           throw new MuleRuntimeException(CoreMessages
-                                             .createStaticMessage(String.format(
+              .createStaticMessage(String.format(
                                                  "Http Listener with path %s contains duplicated uri param names", this.path)));
         }
         uriParamNames.add(uriParamName);
@@ -397,8 +397,8 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
         if (pathPart.contains("*") && pathPart.length() > 1) {
           // TODO: MULE-8946 This should throw a MuleException
           throw new MuleRuntimeException(CoreMessages.createStaticMessage(String.format(
-              "Http Listener with path %s contains an invalid use of a wildcard. Wildcards can only be used at the end of the path (i.e.: /path/*) or between / characters (.i.e.: /path/*/anotherPath))",
-              this.path)));
+                                                                                        "Http Listener with path %s contains an invalid use of a wildcard. Wildcards can only be used at the end of the path (i.e.: /path/*) or between / characters (.i.e.: /path/*/anotherPath))",
+                                                                                        this.path)));
         }
       }
     }

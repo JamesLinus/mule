@@ -14,14 +14,13 @@ import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.processor.Processor;
-import org.mule.runtime.core.exception.MessagingException;
-import org.mule.runtime.core.execution.CompletionHandler;
 import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.core.execution.MessageProcessContext;
 import org.mule.runtime.core.execution.MessageProcessingManager;
 import org.mule.runtime.core.util.Preconditions;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.source.SourceCallback;
+import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 
 import java.util.function.Supplier;
 
@@ -29,8 +28,7 @@ class DefaultSourceCallback<T, A extends Attributes> implements SourceCallback<T
 
   static class Builder<T, A extends Attributes> {
 
-    private Builder() {
-    }
+    private Builder() {}
 
     private DefaultSourceCallback<T, A> product = new DefaultSourceCallback();
 
@@ -64,8 +62,8 @@ class DefaultSourceCallback<T, A extends Attributes> implements SourceCallback<T
       return this;
     }
 
-    public Builder<T, A> setCompletionHandlerSupplier(Supplier<CompletionHandler<Event, MessagingException>> completionHandlerSupplier) {
-      product.completionHandlerSupplier = completionHandlerSupplier;
+    public Builder<T, A> setCompletionHandlerFactory(SourceCompletionHandlerFactory completionHandlerFactory) {
+      product.completionHandlerFactory = completionHandlerFactory;
       return this;
     }
 
@@ -76,7 +74,7 @@ class DefaultSourceCallback<T, A extends Attributes> implements SourceCallback<T
       checkArgument(product.exceptionCallback, "exceptionCallback");
       checkArgument(product.messageProcessingManager, "messageProcessingManager");
       checkArgument(product.processContextSupplier, "processContextSupplier");
-      checkArgument(product.completionHandlerSupplier, "completionHandlerSupplier");
+      checkArgument(product.completionHandlerFactory, "completionHandlerSupplier");
 
       return product;
     }
@@ -96,21 +94,34 @@ class DefaultSourceCallback<T, A extends Attributes> implements SourceCallback<T
   private ExceptionCallback exceptionCallback;
   private MessageProcessingManager messageProcessingManager;
   private Supplier<MessageProcessContext> processContextSupplier;
-  private Supplier<CompletionHandler<Event, MessagingException>> completionHandlerSupplier;
+  private SourceCompletionHandlerFactory completionHandlerFactory;
 
-  private DefaultSourceCallback() {
-  }
+  private DefaultSourceCallback() {}
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void handle(Result<T, A> result) {
+    handle(result, new SourceCallbackContext());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void handle(Result<T, A> result, SourceCallbackContext context) {
     Event event = Event.builder(create(flowConstruct, configName))
         .message((InternalMessage) toMessage(result))
         .exchangePattern(REQUEST_RESPONSE).flow(flowConstruct)
         .build();
 
     messageProcessingManager.processMessage(
-        new ExtensionFlowProcessingTemplate(event, listener, completionHandlerSupplier.get()),
-        processContextSupplier.get());
+                                            new ExtensionFlowProcessingTemplate(event,
+                                                                                listener,
+                                                                                completionHandlerFactory
+                                                                                    .createCompletionHandler(context)),
+                                            processContextSupplier.get());
   }
 
   @Override

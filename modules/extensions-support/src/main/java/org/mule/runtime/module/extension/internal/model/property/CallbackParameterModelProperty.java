@@ -11,8 +11,7 @@ import org.mule.runtime.api.meta.model.ModelProperty;
 public class CallbackParameterModelProperty implements ModelProperty {
 
   public enum CallbackPhase {
-    ON_SUCCESS,
-    ON_ERROR
+    ON_SUCCESS, ON_ERROR
   }
 
   private final CallbackPhase callbackPhase;

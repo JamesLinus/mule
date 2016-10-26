@@ -60,7 +60,7 @@ public class IMAPOperations {
                                                             @Optional(defaultValue = INBOX_FOLDER) String mailboxFolder,
                                                             @DisplayName("Matcher") @Optional IMAPEmailPredicateBuilder imapMatcher,
                                                             @Optional(
-                                                                         defaultValue = "false") boolean deleteAfterRetrieve) {
+                                                                defaultValue = "false") boolean deleteAfterRetrieve) {
     List<Result<Object, IMAPEmailAttributes>> emails = listCommand.list(config, connection, mailboxFolder, imapMatcher);
     if (deleteAfterRetrieve) {
       emails.forEach(e -> {

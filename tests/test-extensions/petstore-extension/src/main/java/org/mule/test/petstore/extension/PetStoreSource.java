@@ -19,10 +19,8 @@ public class PetStoreSource extends Source<String, Attributes> {
   private ExclusivePetBreeder breeder;
 
   @Override
-  public void onStart(SourceCallback<String, Attributes> sourceCallback) throws Exception {
-  }
+  public void onStart(SourceCallback<String, Attributes> sourceCallback) throws Exception {}
 
   @Override
-  public void onStop() {
-  }
+  public void onStop() {}
 }

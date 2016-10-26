@@ -245,8 +245,7 @@ public class ConnectionModelEnricherTestCase extends AbstractMuleTestCase {
     }
 
     @Override
-    public void onStop() {
-    }
+    public void onStop() {}
   }
 
   public static class NotConnectedSource extends Source {
@@ -257,7 +256,6 @@ public class ConnectionModelEnricherTestCase extends AbstractMuleTestCase {
     }
 
     @Override
-    public void onStop() {
-    }
+    public void onStop() {}
   }
 }

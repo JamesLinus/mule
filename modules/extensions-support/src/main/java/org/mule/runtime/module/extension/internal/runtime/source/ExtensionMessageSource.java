@@ -89,7 +89,8 @@ public class ExtensionMessageSource extends ExtensionComponent implements Messag
 
   private synchronized void createSource() throws Exception {
     if (sourceAdapter == null) {
-      sourceAdapter = sourceAdapterFactory.createAdapter(getConfiguration(getInitialiserEvent(muleContext)), createSourceCallbackFactory());
+      sourceAdapter =
+          sourceAdapterFactory.createAdapter(getConfiguration(getInitialiserEvent(muleContext)), createSourceCallbackFactory());
       sourceAdapter.setFlowConstruct(flowConstruct);
     }
   }
@@ -114,15 +115,15 @@ public class ExtensionMessageSource extends ExtensionComponent implements Messag
     }
   }
 
-  protected SourceCallbackFactory createSourceCallbackFactory() {
-    return completionHandlerSupplier -> DefaultSourceCallback.builder()
+  private SourceCallbackFactory createSourceCallbackFactory() {
+    return completionHandlerFactory -> DefaultSourceCallback.builder()
         .setConfigName(getConfigName())
         .setExceptionCallback(this)
         .setFlowConstruct(flowConstruct)
         .setListener(messageProcessor)
         .setProcessingManager(messageProcessingManager)
         .setProcessContextSupplier(this::createProcessingContext)
-        .setCompletionHandlerSupplier(completionHandlerSupplier)
+        .setCompletionHandlerFactory(completionHandlerFactory)
         .build();
   }
 
@@ -293,10 +294,10 @@ public class ExtensionMessageSource extends ExtensionComponent implements Messag
     if (!configurationModel.getSourceModel(sourceModel.getName()).isPresent()
         && !configurationProvider.getExtensionModel().getSourceModel(sourceModel.getName()).isPresent()) {
       throw new IllegalOperationException(format(
-                                                        "Flow '%s' defines an usage of operation '%s' which points to configuration '%s'. "
-                                                            + "The selected config does not support that operation.",
-                                                        flowConstruct.getName(), sourceModel.getName(),
-                                                        configurationProvider.getName()));
+                                                 "Flow '%s' defines an usage of operation '%s' which points to configuration '%s'. "
+                                                     + "The selected config does not support that operation.",
+                                                 flowConstruct.getName(), sourceModel.getName(),
+                                                 configurationProvider.getName()));
     }
   }
 
@@ -306,6 +307,5 @@ public class ExtensionMessageSource extends ExtensionComponent implements Messag
   }
 
   @Override
-  protected void doInitialise() throws InitialisationException {
-  }
+  protected void doInitialise() throws InitialisationException {}
 }

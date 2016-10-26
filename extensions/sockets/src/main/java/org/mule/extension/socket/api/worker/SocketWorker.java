@@ -31,7 +31,7 @@ public abstract class SocketWorker implements Disposable, Work {
 
   protected void handle(InputStream content, SocketAttributes attributes) {
     SourceCallbackContext ctx = null;
-    ctx.addParameter("work", this);
+    ctx.addVariable("work", this);
     callback.handle(createResult(content, attributes), ctx);
   }
 

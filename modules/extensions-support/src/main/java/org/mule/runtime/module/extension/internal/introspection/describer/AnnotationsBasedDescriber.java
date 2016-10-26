@@ -237,11 +237,11 @@ public final class AnnotationsBasedDescriber implements Describer {
     }
 
     configurationDeclarer.withModelProperty(
-        new ConfigurationFactoryModelProperty(new TypeAwareConfigurationFactory(configurationType
-                                                                                    .getDeclaringClass(),
-                                                                                extensionType
-                                                                                    .getDeclaringClass()
-                                                                                    .getClassLoader())))
+                                            new ConfigurationFactoryModelProperty(new TypeAwareConfigurationFactory(configurationType
+                                                .getDeclaringClass(),
+                                                                                                                    extensionType
+                                                                                                                        .getDeclaringClass()
+                                                                                                                        .getClassLoader())))
         .withModelProperty(new ImplementingTypeModelProperty(configurationType.getDeclaringClass()));
 
     declareFieldBasedParameters(configurationDeclarer, configurationType.getParameters(),
@@ -269,9 +269,9 @@ public final class AnnotationsBasedDescriber implements Describer {
 
     if (isInvalidConfigSupport(supportsConfig, configParameter, connectionParameter)) {
       throw new IllegalSourceModelDefinitionException(
-          format("Source '%s' is defined at the extension level but it requires a config parameter. "
-                     + "Remove such parameter or move the source to the proper config",
-                 sourceType.getName()));
+                                                      format("Source '%s' is defined at the extension level but it requires a config parameter. "
+                                                          + "Remove such parameter or move the source to the proper config",
+                                                             sourceType.getName()));
     }
 
     HasSourceDeclarer actualDeclarer =
@@ -290,7 +290,7 @@ public final class AnnotationsBasedDescriber implements Describer {
     if (sourceGenerics.size() != 2) {
       // TODO: MULE-9220: Add a syntax validator for this
       throw new IllegalModelDefinitionException(format("Message source class '%s' was expected to have 2 generic types "
-                                                           + "(one for the Payload type and another for the Attributes type) but %d were found",
+          + "(one for the Payload type and another for the Attributes type) but %d were found",
                                                        sourceType.getName(),
                                                        sourceGenerics.size()));
     }
@@ -316,7 +316,7 @@ public final class AnnotationsBasedDescriber implements Describer {
   private void declareSourceParameters(SourceElement sourceType, SourceDeclarer source) {
     declareFieldBasedParameters(source, sourceType.getParameters(),
                                 new ParameterDeclarationContext(SOURCE, source.getDeclaration()))
-        .forEach(p -> p.withExpressionSupport(NOT_SUPPORTED));
+                                    .forEach(p -> p.withExpressionSupport(NOT_SUPPORTED));
   }
 
   private void declareSourceCallback(SourceElement sourceType, SourceDeclarer source) {
@@ -332,9 +332,11 @@ public final class AnnotationsBasedDescriber implements Describer {
   private void declareSourceCallbackParameters(SourceDeclarer source, Optional<MethodElement> sourceCallback,
                                                CallbackPhase callbackPhase) {
     sourceCallback.ifPresent(method -> declareMethodBasedParameters(
-        source, method.getParameters(), new ParameterDeclarationContext(SOURCE, source.getDeclaration()))
-        .forEach(p -> p.withModelProperty(new CallbackParameterModelProperty(callbackPhase)))
-    );
+                                                                    source, method.getParameters(),
+                                                                    new ParameterDeclarationContext(SOURCE,
+                                                                                                    source.getDeclaration()))
+                                                                                                        .forEach(p -> p
+                                                                                                            .withModelProperty(new CallbackParameterModelProperty(callbackPhase))));
   }
 
   private Optional<Method> getMethod(Optional<MethodElement> method) {
@@ -371,9 +373,9 @@ public final class AnnotationsBasedDescriber implements Describer {
 
       if (isInvalidConfigSupport(supportsConfig, configParameter, connectionParameter)) {
         throw new IllegalOperationModelDefinitionException(format(
-            "Operation '%s' is defined at the extension level but it requires a config. "
-                + "Remove such parameter or move the operation to the proper config",
-            method.getName()));
+                                                                  "Operation '%s' is defined at the extension level but it requires a config. "
+                                                                      + "Remove such parameter or move the operation to the proper config",
+                                                                  method.getName()));
       }
 
       HasOperationDeclarer actualDeclarer =
@@ -452,9 +454,9 @@ public final class AnnotationsBasedDescriber implements Describer {
     if (providerGenerics.size() != 1) {
       // TODO: MULE-9220: Add a syntax validator for this
       throw new IllegalConnectionProviderModelDefinitionException(
-          format("Connection provider class '%s' was expected to have 1 generic type "
-                     + "(for the connection type) but %d were found",
-                 providerType.getName(), providerGenerics.size()));
+                                                                  format("Connection provider class '%s' was expected to have 1 generic type "
+                                                                      + "(for the connection type) but %d were found",
+                                                                         providerType.getName(), providerGenerics.size()));
     }
 
     providerDeclarer = declarer.withConnectionProvider(name).describedAs(description)
@@ -501,7 +503,7 @@ public final class AnnotationsBasedDescriber implements Describer {
         ParameterDeclarer parameter =
             extensionParameter.isRequired() ? component.withRequiredParameter(extensionParameter.getAlias())
                 : component.withOptionalParameter(extensionParameter.getAlias())
-                .defaultingTo(extensionParameter.defaultValue().isPresent() ? extensionParameter.defaultValue().get() : null);
+                    .defaultingTo(extensionParameter.defaultValue().isPresent() ? extensionParameter.defaultValue().get() : null);
         parameter.ofType(extensionParameter.getMetadataType(typeLoader));
 
         parameter.describedAs(EMPTY);
@@ -533,12 +535,12 @@ public final class AnnotationsBasedDescriber implements Describer {
         if (!annotatedParameters.isEmpty()) {
           if (extensionParameter.equals(parameterGroupOwner)) {
             throw new IllegalParameterModelDefinitionException(
-                format(
-                    "@%s cannot be applied recursively within the same class but field '%s' was found inside class '%s'",
-                    org.mule.runtime.extension.api.annotation.ParameterGroup.class
-                        .getSimpleName(),
-                    parameterGroupOwner.getName(),
-                    parameterGroupOwner.getType().getName()));
+                                                               format(
+                                                                      "@%s cannot be applied recursively within the same class but field '%s' was found inside class '%s'",
+                                                                      org.mule.runtime.extension.api.annotation.ParameterGroup.class
+                                                                          .getSimpleName(),
+                                                                      parameterGroupOwner.getName(),
+                                                                      parameterGroupOwner.getType().getName()));
           } else {
             declareParameters(component, annotatedParameters, contributors, declarationContext, extensionParameter);
           }
@@ -558,8 +560,8 @@ public final class AnnotationsBasedDescriber implements Describer {
     for (Class<?> operationClass : operationClasses) {
       if (configurationType.isAssignableFrom(operationClass) || operationClass.isAssignableFrom(configurationType)) {
         throw new IllegalConfigurationModelDefinitionException(
-            format("Configuration class '%s' cannot be the same class (nor a derivative) of any operation class '%s",
-                   configurationType.getName(), operationClass.getName()));
+                                                               format("Configuration class '%s' cannot be the same class (nor a derivative) of any operation class '%s",
+                                                                      configurationType.getName(), operationClass.getName()));
       }
     }
   }
@@ -567,8 +569,8 @@ public final class AnnotationsBasedDescriber implements Describer {
   private void checkOperationIsNotAnExtension(Class<?> operationType) {
     if (operationType.isAssignableFrom(extensionType) || extensionType.isAssignableFrom(operationType)) {
       throw new IllegalOperationModelDefinitionException(
-          format("Operation class '%s' cannot be the same class (nor a derivative) of the extension class '%s",
-                 operationType.getName(), extensionType.getName()));
+                                                         format("Operation class '%s' cannot be the same class (nor a derivative) of the extension class '%s",
+                                                                operationType.getName(), extensionType.getName()));
     }
   }
 
@@ -602,11 +604,11 @@ public final class AnnotationsBasedDescriber implements Describer {
 
   private void parseXmlHints(ExtensionParameter extensionParameter, ParameterDeclarer parameter) {
     extensionParameter.getAnnotation(XmlHints.class).ifPresent(
-        hints -> parameter.withDsl(ElementDslModel.builder()
-                                       .allowsInlineDefinition(hints.allowInlineDefinition())
-                                       .allowsReferences(hints.allowReferences())
-                                       .allowTopLevelDefinition(hints.allowTopLevelDefinition())
-                                       .build()));
+                                                               hints -> parameter.withDsl(ElementDslModel.builder()
+                                                                   .allowsInlineDefinition(hints.allowInlineDefinition())
+                                                                   .allowsReferences(hints.allowReferences())
+                                                                   .allowTopLevelDefinition(hints.allowTopLevelDefinition())
+                                                                   .build()));
   }
 
   private void checkAnnotationsNotUsedMoreThanOnce(List<ExtensionParameter> parameters,
@@ -615,9 +617,9 @@ public final class AnnotationsBasedDescriber implements Describer {
       final long count = parameters.stream().filter(param -> param.isAnnotatedWith(annotation)).count();
       if (count > 1) {
         throw new IllegalModelDefinitionException(
-            format("The defined parameters %s from %s, uses the annotation @%s more than once",
-                   parameters.stream().map(p -> p.getName()).collect(toList()),
-                   parameters.get(0).getOwnerDescription(), annotation.getSimpleName()));
+                                                  format("The defined parameters %s from %s, uses the annotation @%s more than once",
+                                                         parameters.stream().map(p -> p.getName()).collect(toList()),
+                                                         parameters.get(0).getOwnerDescription(), annotation.getSimpleName()));
       }
     }
   }
@@ -631,9 +633,9 @@ public final class AnnotationsBasedDescriber implements Describer {
 
   private void addImplementingTypeModelProperty(ExtensionParameter extensionParameter, ParameterDeclarer parameter) {
     parameter.withModelProperty(extensionParameter.isFieldBased()
-                                    ? new DeclaringMemberModelProperty(((FieldElement) extensionParameter).getField())
-                                    : new ImplementingParameterModelProperty(
-        ((ParameterElement) extensionParameter).getParameter()));
+        ? new DeclaringMemberModelProperty(((FieldElement) extensionParameter).getField())
+        : new ImplementingParameterModelProperty(
+                                                 ((ParameterElement) extensionParameter).getParameter()));
   }
 
   private void addPagedOperationModelProperty(MethodElement operationMethod, OperationDeclarer operation,
@@ -641,9 +643,9 @@ public final class AnnotationsBasedDescriber implements Describer {
     if (PagingProvider.class.isAssignableFrom(operationMethod.getReturnType())) {
       if (!supportsConfig) {
         throw new IllegalOperationModelDefinitionException(format(
-            "Paged operation '%s' is defined at the extension level but it requires a config, since connections "
-                + "are required for paging",
-            operationMethod.getName()));
+                                                                  "Paged operation '%s' is defined at the extension level but it requires a config, since connections "
+                                                                      + "are required for paging",
+                                                                  operationMethod.getName()));
       }
       operation.withModelProperty(new PagedOperationModelProperty());
     }
@@ -686,11 +688,11 @@ public final class AnnotationsBasedDescriber implements Describer {
           metadataType = expressionResolverType.get();
         } else {
           throw new IllegalParameterModelDefinitionException(String
-                                                                 .format(
-                                                                     "The parameter [%s] from the Operation [%s] doesn't specify the %s parameterized type",
-                                                                     parameter.getName(),
-                                                                     declarationContext.getName(),
-                                                                     ParameterResolver.class.getSimpleName()));
+              .format(
+                      "The parameter [%s] from the Operation [%s] doesn't specify the %s parameterized type",
+                      parameter.getName(),
+                      declarationContext.getName(),
+                      ParameterResolver.class.getSimpleName()));
         }
         declarer.ofType(metadataType);
         declarer.withModelProperty(new ParameterResolverTypeModelProperty());

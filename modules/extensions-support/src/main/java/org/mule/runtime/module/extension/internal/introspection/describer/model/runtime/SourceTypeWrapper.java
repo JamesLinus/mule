@@ -72,8 +72,8 @@ final class SourceTypeWrapper<T extends Source> extends TypeWrapper implements S
       return empty();
     } else if (methods.size() > 1) {
       throw new IllegalSourceModelDefinitionException(
-          format("Source declared in class '%s' declares more than one method annotated with '%s'",
-                 aClass.getName(), annotationType.getSimpleName()));
+                                                      format("Source declared in class '%s' declares more than one method annotated with '%s'",
+                                                             aClass.getName(), annotationType.getSimpleName()));
     } else {
       return of(new MethodWrapper(methods.iterator().next()));
     }

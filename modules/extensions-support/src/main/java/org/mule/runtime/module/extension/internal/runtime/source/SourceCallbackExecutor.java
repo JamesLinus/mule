@@ -6,10 +6,13 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.source;
 
-import org.mule.runtime.extension.api.runtime.source.SourceCallback;
+import org.mule.runtime.core.api.Event;
+import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 
-@FunctionalInterface
-interface SourceCallbackFactory {
+interface SourceCallbackExecutor {
 
-  SourceCallback createSourceCallback(SourceCompletionHandlerFactory completionHandlerFactory);
+  Object execute(Event event, SourceCallbackContext context) throws Exception;
+
+
+
 }

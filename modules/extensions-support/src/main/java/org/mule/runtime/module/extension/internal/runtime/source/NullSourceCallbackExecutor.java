@@ -6,10 +6,16 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.source;
 
-import org.mule.runtime.extension.api.runtime.source.SourceCallback;
+import org.mule.runtime.core.api.Event;
+import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 
-@FunctionalInterface
-interface SourceCallbackFactory {
+public class NullSourceCallbackExecutor implements SourceCallbackExecutor {
 
-  SourceCallback createSourceCallback(SourceCompletionHandlerFactory completionHandlerFactory);
+  /**
+   * @return {@code null}
+   */
+  @Override
+  public Object execute(Event event, SourceCallbackContext context) {
+    return null;
+  }
 }

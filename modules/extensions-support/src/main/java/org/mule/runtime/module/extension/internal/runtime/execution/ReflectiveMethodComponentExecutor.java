@@ -40,26 +40,29 @@ public class ReflectiveMethodComponentExecutor<M extends ComponentModel> impleme
   }
 
   private static final Logger LOGGER = getLogger(ReflectiveMethodOperationExecutor.class);
-  private static final ArgumentResolverDelegate NO_ARGS_DELEGATE = new ReflectiveMethodComponentExecutor.NoArgumentsResolverDelegate();
+  private static final ArgumentResolverDelegate NO_ARGS_DELEGATE =
+      new ReflectiveMethodComponentExecutor.NoArgumentsResolverDelegate();
 
-  private final Method operationMethod;
+  private final Method method;
   private final Object componentInstance;
   private final ArgumentResolverDelegate argumentResolverDelegate;
   private final ClassLoader extensionClassLoader;
 
   private MuleContext muleContext;
 
-  public ReflectiveMethodComponentExecutor(M componentModel, Method operationMethod, Object componentInstante) {
-    this.operationMethod = operationMethod;
-    this.componentInstance = componentInstante;
-    argumentResolverDelegate = isEmpty(operationMethod.getParameterTypes()) ? NO_ARGS_DELEGATE
-        : new MethodArgumentResolverDelegate(componentModel, operationMethod);
-    extensionClassLoader = operationMethod.getDeclaringClass().getClassLoader();
+  public ReflectiveMethodComponentExecutor(M componentModel, Method method, Object componentInstance) {
+    this.method = method;
+    this.componentInstance = componentInstance;
+    argumentResolverDelegate = isEmpty(method.getParameterTypes()) ? NO_ARGS_DELEGATE
+        : new MethodArgumentResolverDelegate(componentModel, method);
+    extensionClassLoader = method.getDeclaringClass().getClassLoader();
   }
 
   public Object execute(ExecutionContext<M> executionContext) throws Exception {
     return withContextClassLoader(extensionClassLoader, () -> invokeMethod(
-        operationMethod, componentInstance, getParameterValues(executionContext, operationMethod.getParameterTypes())));
+                                                                           method, componentInstance,
+                                                                           getParameterValues(executionContext,
+                                                                                              method.getParameterTypes())));
   }
 
   private Object[] getParameterValues(ExecutionContext<M> executionContext, Class<?>[] parameterTypes) {

@@ -93,14 +93,14 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
   @OnSuccess
   public void onSuccess(@Optional(defaultValue = "#[payload]") @XmlHints(allowReferences = false) Object responseValue,
                         SourceCallbackContext context) {
-    SocketWorker worker = context.getParameter("work");
+    SocketWorker worker = context.getVariable("work");
     worker.onComplete(responseValue);
   }
 
 
   @OnError
   public void onError(Error error, SourceCallbackContext context) {
-    SocketWorker worker = context.getParameter("work");
+    SocketWorker worker = context.getVariable("work");
     worker.onError(error.getCause());
   }
 
@@ -109,7 +109,7 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
     private final SourceCallback<InputStream, SocketAttributes> sourceCallback;
 
     private SocketWorkListener(
-        SourceCallback<InputStream, SocketAttributes> sourceCallback) {
+                               SourceCallback<InputStream, SocketAttributes> sourceCallback) {
       this.sourceCallback = sourceCallback;
     }
 
@@ -175,9 +175,9 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
    */
   @Override
   public void onStop() {
-      stopRequested.set(true);
-      workManager.dispose();
-      shutdownExecutor();
+    stopRequested.set(true);
+    workManager.dispose();
+    shutdownExecutor();
   }
 
   /**

@@ -48,14 +48,11 @@ import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.context.WorkManager;
 import org.mule.runtime.core.api.lifecycle.Disposable;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
-import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.lifecycle.Startable;
 import org.mule.runtime.core.api.lifecycle.Stoppable;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.retry.RetryPolicyTemplate;
-import org.mule.runtime.core.exception.MessagingException;
-import org.mule.runtime.core.execution.CompletionHandler;
 import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.core.execution.MessageProcessContext;
 import org.mule.runtime.core.execution.MessageProcessingManager;
@@ -128,7 +125,7 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
   private Processor messageProcessor;
 
   @Mock
-  private Supplier<CompletionHandler<Event, MessagingException>> completionHandlerSupplier;
+  private SourceCompletionHandlerFactory completionHandlerFactory;
 
   @Mock
   private FlowConstruct flowConstruct;
@@ -182,12 +179,14 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
     sourceCallback = DefaultSourceCallback.builder()
         .setConfigName(CONFIG_NAME)
         .setFlowConstruct(flowConstruct)
+        .setProcessingManager(messageProcessingManager)
         .setListener(messageProcessor)
         .setProcessContextSupplier(processContextSupplier)
-        .setCompletionHandlerSupplier(completionHandlerSupplier)
+        .setCompletionHandlerFactory(completionHandlerFactory)
         .setExceptionCallback(exceptionCallback)
         .build();
-    when(sourceCallbackFactory.createSourceCallback(completionHandlerSupplier)).thenReturn(sourceCallback);
+
+    when(sourceCallbackFactory.createSourceCallback(completionHandlerFactory)).thenReturn(sourceCallback);
     sourceAdapter = new SourceAdapter(extensionModel,
                                       sourceModel,
                                       source,
@@ -196,7 +195,7 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
                                       callbackParameters,
                                       callbackParameters);
 
-    when(sourceAdapterFactory.createAdapter(of(configurationInstance), sourceCallbackFactory)).thenReturn(sourceAdapter);
+    when(sourceAdapterFactory.createAdapter(any(), any())).thenReturn(sourceAdapter);
     doAnswer(invocationOnMock -> {
       sourceCallback.handle(result);
       return null;
@@ -266,12 +265,13 @@ public class ExtensionMessageSourceTestCase extends AbstractMuleContextTestCase 
   }
 
   @Test
-  public void initialiseFailsWithInitialisationException() throws Exception {
-    Exception e = mock(InitialisationException.class);
-    doThrow(e).when(source).onStart(sourceCallback);
+  public void failToStart() throws Exception {
+    Exception e = new Exception();
+    doThrow(e).when(source).onStart(any());
     expectedException.expect(is(sameInstance(e)));
 
     messageSource.initialise();
+    messageSource.start();
   }
 
   @Test

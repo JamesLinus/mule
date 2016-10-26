@@ -28,6 +28,5 @@ public class HarvestPeachesSource extends Source<String, StringAttributes> {
   }
 
   @Override
-  public void onStop() {
-  }
+  public void onStop() {}
 }

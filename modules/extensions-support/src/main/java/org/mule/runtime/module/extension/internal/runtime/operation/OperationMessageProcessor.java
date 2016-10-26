@@ -136,7 +136,8 @@ public class OperationMessageProcessor extends ExtensionComponent implements Pro
     return new MessagingException(createStaticMessage(e.getMessage()), event, e, this);
   }
 
-  private ExecutionContextAdapter<OperationModel> createExecutionContext(Optional<ConfigurationInstance> configuration, Event event)
+  private ExecutionContextAdapter<OperationModel> createExecutionContext(Optional<ConfigurationInstance> configuration,
+                                                                         Event event)
       throws MuleException {
     return new DefaultExecutionContext(extensionModel, configuration, resolverSet.resolve(event), operationModel, event,
                                        muleContext);

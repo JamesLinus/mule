@@ -29,20 +29,16 @@ import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.execution.CompletionHandler;
 import org.mule.runtime.core.execution.ExceptionCallback;
 import org.mule.runtime.core.execution.NullCompletionHandler;
-import org.mule.runtime.core.util.func.UnsafeFunction;
 import org.mule.runtime.core.util.func.UnsafeRunnable;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
 import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
 import org.mule.runtime.extension.api.runtime.ConfigurationInstance;
-import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 import org.mule.runtime.extension.api.runtime.source.Source;
 import org.mule.runtime.extension.api.runtime.source.SourceCallback;
+import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 import org.mule.runtime.module.extension.internal.model.property.SourceCallbackModelProperty;
-import org.mule.runtime.module.extension.internal.runtime.DefaultExecutionContext;
-import org.mule.runtime.module.extension.internal.runtime.execution.ReflectiveMethodComponentExecutor;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
-import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSetResult;
 import org.mule.runtime.module.extension.internal.util.FieldSetter;
 
 import java.lang.annotation.Annotation;
@@ -105,63 +101,57 @@ public final class SourceAdapter implements Startable, Stoppable, FlowConstructA
   }
 
   private SourceCallback createSourceCallback() {
-    return sourceCallbackFactory.createSourceCallback(this::createCompletionHandler);
+    return sourceCallbackFactory.createSourceCallback(createCompletionHandlerFactory());
   }
 
-  private CompletionHandler<Event, MessagingException> createCompletionHandler() {
+  private SourceCompletionHandlerFactory createCompletionHandlerFactory() {
     return sourceModel.getModelProperty(SourceCallbackModelProperty.class)
         .map(this::doCreateCompletionHandler)
-        .orElse(new NullCompletionHandler<>());
+        .orElse(context -> new NullCompletionHandler<>());
   }
 
-  private CompletionHandler<Event, MessagingException> doCreateCompletionHandler(SourceCallbackModelProperty modelProperty) {
-    final UnsafeFunction<Event, Object> onSuccessFunction;
-    final UnsafeFunction<Event, Object> onErrorFunction;
+  private SourceCompletionHandlerFactory doCreateCompletionHandler(SourceCallbackModelProperty modelProperty) {
+    final SourceCallbackExecutor onSuccessExecutor =
+        getMethodExecutor(modelProperty.getOnSuccessMethod(), successCallbackParameters);
+    final SourceCallbackExecutor onErrorExecutor = getMethodExecutor(modelProperty.getOnErrorMethod(), errorCallbackParameters);
 
-    if (modelProperty.getOnSuccessMethod().isPresent()) {
-      Method method = modelProperty.getOnSuccessMethod().get();
-      ReflectiveMethodComponentExecutor<SourceModel> executor =
-          new ReflectiveMethodComponentExecutor<>(sourceModel, method, source);
-      onSuccessFunction = callbackEvent -> executor.execute(createExecutionContext(callbackEvent, successCallbackParameters));
-    } else {
-      onSuccessFunction = callbackEvent -> null;
-    }
-
-    if (modelProperty.getOnErrorMethod().isPresent()) {
-      Method method = modelProperty.getOnErrorMethod().get();
-      ReflectiveMethodComponentExecutor<SourceModel> executor =
-          new ReflectiveMethodComponentExecutor<>(sourceModel, method, source);
-      onErrorFunction = callbackEvent -> executor.execute(createExecutionContext(callbackEvent, errorCallbackParameters));
-    } else {
-      onErrorFunction = callbackEvent -> null;
-    }
-
-    return new SourceCompletionHandler(onSuccessFunction, onErrorFunction);
+    return context -> new SourceCompletionHandler(onSuccessExecutor, onErrorExecutor, context);
   }
+
+  private SourceCallbackExecutor getMethodExecutor(Optional<Method> method, ResolverSet parameters) {
+    return method.map(m -> (SourceCallbackExecutor) new ReflectiveSourceCallbackExecutor(extensionModel, configurationInstance,
+                                                                                         sourceModel, source, m, parameters,
+                                                                                         muleContext))
+        .orElse(new NullSourceCallbackExecutor());
+  }
+
 
   private class SourceCompletionHandler implements CompletionHandler<Event, MessagingException> {
 
-    private final UnsafeFunction<Event, Object> onSuccessFunction;
-    private final UnsafeFunction<Event, Object> onErrorFunction;
+    private final SourceCallbackExecutor onSuccessExecutor;
+    private final SourceCallbackExecutor onErrorExecutor;
+    private final SourceCallbackContext context;
 
-    private SourceCompletionHandler(
-        UnsafeFunction<Event, Object> onSuccessFunction,
-        UnsafeFunction<Event, Object> onErrorFunction) {
-      this.onSuccessFunction = onSuccessFunction;
-      this.onErrorFunction = onErrorFunction;
+    public SourceCompletionHandler(SourceCallbackExecutor onSuccessExecutor,
+                                   SourceCallbackExecutor onErrorExecutor,
+                                   SourceCallbackContext context) {
+      this.onSuccessExecutor = onSuccessExecutor;
+      this.onErrorExecutor = onErrorExecutor;
+      this.context = context;
     }
 
     @Override
     public void onCompletion(Event result, ExceptionCallback exceptionCallback) {
-      safely(() -> onSuccessFunction.apply(result), exceptionCallback);
+      safely(() -> onSuccessExecutor.execute(result, context), exceptionCallback);
     }
 
     @Override
     public void onFailure(MessagingException exception) {
-      safely(() -> onErrorFunction.apply(exception.getEvent()), callbackException -> {
+      safely(() -> onErrorExecutor.execute(exception.getEvent(), context), callbackException -> {
         if (LOGGER.isDebugEnabled()) {
-          LOGGER
-              .debug(format("Found exception trying to handle error from source '%s'", sourceModel.getName()), callbackException);
+          LOGGER.debug(format("Found exception trying to handle error from source '%s'",
+                              sourceModel.getName()),
+                       callbackException);
         }
       });
     }
@@ -173,21 +163,6 @@ public final class SourceAdapter implements Startable, Stoppable, FlowConstructA
         exceptionCallback.onException(e);
       }
     }
-  }
-
-  private ExecutionContext<SourceModel> createExecutionContext(Event event, ResolverSet parameters) {
-    final ResolverSetResult resolverSetResult;
-    try {
-      resolverSetResult = parameters.resolve(event);
-    } catch (MuleException e) {
-      throw new MuleRuntimeException(createStaticMessage("Found exception trying to resolve parameters for source callback"), e);
-    }
-    return new DefaultExecutionContext<>(extensionModel,
-                                         configurationInstance,
-                                         resolverSetResult,
-                                         sourceModel,
-                                         event,
-                                         muleContext);
   }
 
   @Override
@@ -229,8 +204,9 @@ public final class SourceAdapter implements Startable, Stoppable, FlowConstructA
         connectionSetter.get().set(source, connectionHandler.getConnection());
       } catch (ConnectionException e) {
         throw new MuleRuntimeException(createStaticMessage(format(
-            "Could not obtain connection for message source '%s' on flow '%s'",
-            getName(), flowConstruct.getName())), e);
+                                                                  "Could not obtain connection for message source '%s' on flow '%s'",
+                                                                  getName(), flowConstruct.getName())),
+                                       e);
       }
     }
   }
@@ -254,9 +230,10 @@ public final class SourceAdapter implements Startable, Stoppable, FlowConstructA
     if (fields.size() > 1) {
       // TODO: MULE-9220 Move this to a syntax validator
       throw new IllegalModelDefinitionException(
-          format("Message Source defined on class '%s' has more than one field annotated with '@%s'. "
-                     + "Only one field in the class can bare such annotation", source.getClass().getName(),
-                 annotation.getClass().getSimpleName()));
+                                                format("Message Source defined on class '%s' has more than one field annotated with '@%s'. "
+                                                    + "Only one field in the class can bare such annotation",
+                                                       source.getClass().getName(),
+                                                       annotation.getClass().getSimpleName()));
     }
 
     return Optional.of(new FieldSetter<>(fields.iterator().next()));

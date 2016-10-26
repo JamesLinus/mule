@@ -180,7 +180,7 @@ public class MetadataOperations {
   @OutputResolver(output = TestOutputAttributesResolverWithKeyResolver.class,
       attributes = TestOutputAttributesResolverWithKeyResolver.class)
   public Result<Object, AbstractOutputAttributes> outputAttributesWithDynamicMetadata(
-                                                                                               @MetadataKeyId(TestOutputAttributesResolverWithKeyResolver.class) String type) {
+                                                                                      @MetadataKeyId(TestOutputAttributesResolverWithKeyResolver.class) String type) {
     return null;
   }
 

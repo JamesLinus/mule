@@ -265,7 +265,8 @@ public class DirectoryListener extends Source<InputStream, ListenerFileAttribute
     }
   }
 
-  private void processEvent(WatchEvent<?> watchEvent, WatchKey key, SourceCallback<InputStream, ListenerFileAttributes> sourceCallback) {
+  private void processEvent(WatchEvent<?> watchEvent, WatchKey key,
+                            SourceCallback<InputStream, ListenerFileAttributes> sourceCallback) {
     WatchEvent<Path> event = (WatchEvent<Path>) watchEvent;
 
     Path watchPath = keyPaths.get(key);
