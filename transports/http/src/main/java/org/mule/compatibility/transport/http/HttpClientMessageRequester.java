@@ -13,7 +13,7 @@ import org.mule.compatibility.transport.http.i18n.HttpMessages;
 import org.mule.compatibility.transport.http.transformers.HttpClientMethodResponseToObject;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.transformer.Transformer;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;

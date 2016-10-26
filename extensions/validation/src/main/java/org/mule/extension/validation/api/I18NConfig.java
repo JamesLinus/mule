@@ -6,7 +6,7 @@
  */
 package org.mule.extension.validation.api;
 
-import static org.mule.runtime.core.util.StringUtils.EMPTY;
+import static org.mule.runtime.internal.utils.StringUtils.EMPTY;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;

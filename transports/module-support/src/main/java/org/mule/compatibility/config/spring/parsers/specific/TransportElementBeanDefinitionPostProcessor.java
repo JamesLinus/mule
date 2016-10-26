@@ -21,7 +21,7 @@ import org.mule.runtime.config.spring.dsl.model.ComponentModel;
 import org.mule.runtime.config.spring.dsl.spring.CommonBeanDefinitionCreator;
 import org.mule.runtime.config.spring.factories.MessageProcessorChainFactoryBean;
 import org.mule.runtime.core.processor.AbstractRedeliveryPolicy;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;

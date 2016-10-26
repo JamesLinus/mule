@@ -11,7 +11,7 @@ import org.mule.compatibility.transport.http.HttpConstants;
 import org.mule.runtime.core.api.MuleEventContext;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.lifecycle.Callable;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 public class ETagComponent implements Callable {
 

@@ -13,7 +13,7 @@ import static org.mule.runtime.module.http.api.HttpConstants.HttpStatus.CREATED;
 import static org.mule.runtime.module.http.api.HttpConstants.HttpStatus.OK;
 import static org.mule.runtime.module.http.api.HttpHeaders.Names.CONTENT_LENGTH;
 
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 import org.mule.runtime.module.http.api.HttpHeaders;
 import org.mule.tck.junit4.rule.DynamicPort;
 import org.mule.tck.junit4.rule.SystemProperty;

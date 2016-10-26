@@ -29,7 +29,7 @@ import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.message.PartAttributes;
 import org.mule.runtime.core.util.AttributeEvaluator;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.module.http.api.requester.HttpSendBodyMode;
 import org.mule.runtime.module.http.api.requester.HttpStreamingType;
 import org.mule.runtime.module.http.internal.HttpParser;

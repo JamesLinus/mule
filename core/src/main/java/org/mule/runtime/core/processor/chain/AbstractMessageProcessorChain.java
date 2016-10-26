@@ -21,7 +21,7 @@ import static reactor.core.publisher.Flux.just;
 import org.mule.runtime.core.AbstractAnnotatedObject;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.construct.MessageProcessorPathResolver;
 import org.mule.runtime.core.api.construct.Pipeline;
@@ -38,7 +38,7 @@ import org.mule.runtime.core.context.notification.ServerNotificationManager;
 import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.execution.MessageProcessorExecutionTemplate;
 import org.mule.runtime.core.util.NotificationUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;

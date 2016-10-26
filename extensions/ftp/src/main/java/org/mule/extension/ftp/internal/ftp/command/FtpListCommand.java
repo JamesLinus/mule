@@ -15,7 +15,7 @@ import org.mule.extension.file.common.api.command.ListCommand;
 import org.mule.extension.ftp.api.ftp.ClassicFtpFileAttributes;
 import org.mule.extension.ftp.internal.ftp.connection.ClassicFtpFileSystem;
 import org.mule.runtime.api.message.Message;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;

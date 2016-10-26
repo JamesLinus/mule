@@ -8,9 +8,9 @@
 package org.mule.runtime.container.api;
 
 import static org.mule.runtime.core.api.config.MuleProperties.MULE_HOME_DIRECTORY_PROPERTY;
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.File;
 

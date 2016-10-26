@@ -8,14 +8,14 @@ package org.mule.extension.file.common.api;
 
 import static java.lang.String.format;
 import static java.nio.file.Paths.get;
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
 import org.mule.extension.file.common.api.metadata.FileTreeNodeMetadataResolver;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.message.OutputHandler;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.extension.api.annotation.DataTypeParameters;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;

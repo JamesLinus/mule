@@ -26,7 +26,7 @@ import org.mule.runtime.config.spring.parsers.generic.AutoIdUtils;
 import org.mule.runtime.config.spring.util.SpringXMLUtils;
 import org.mule.runtime.dsl.api.component.ComponentIdentifier;
 import org.mule.runtime.core.util.ClassUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.XMLSecureFactories;
 
 import com.google.common.collect.ImmutableList;

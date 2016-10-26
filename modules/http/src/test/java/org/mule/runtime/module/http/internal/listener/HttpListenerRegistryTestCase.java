@@ -11,7 +11,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import org.mule.runtime.core.api.MuleRuntimeException;
+import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.module.http.internal.domain.request.HttpRequest;
 import org.mule.runtime.module.http.internal.listener.async.RequestHandler;
 import org.mule.runtime.module.http.internal.listener.matcher.AcceptsAllMethodsRequestMatcher;
@@ -19,7 +19,7 @@ import org.mule.runtime.module.http.internal.listener.matcher.ListenerRequestMat
 import org.mule.runtime.module.http.internal.listener.matcher.MethodRequestMatcher;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;

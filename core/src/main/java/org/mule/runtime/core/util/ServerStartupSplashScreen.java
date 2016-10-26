@@ -10,6 +10,7 @@ import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.agent.Agent;
 import org.mule.runtime.core.config.MuleManifest;
 import org.mule.runtime.core.config.i18n.CoreMessages;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

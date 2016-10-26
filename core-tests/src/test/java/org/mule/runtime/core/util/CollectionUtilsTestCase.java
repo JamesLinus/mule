@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.util;
 
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 

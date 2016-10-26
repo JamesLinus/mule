@@ -12,7 +12,7 @@ import org.mule.runtime.core.api.model.InvocationResult;
 import org.mule.runtime.core.routing.filters.WildcardFilter;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.StringMessageUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

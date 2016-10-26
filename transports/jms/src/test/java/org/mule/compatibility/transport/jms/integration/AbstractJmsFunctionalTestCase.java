@@ -24,7 +24,7 @@ import org.mule.runtime.core.transaction.TransactionCoordination;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.CollectionUtils;
 import org.mule.runtime.core.util.IOUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.Serializable;
 import java.net.URL;

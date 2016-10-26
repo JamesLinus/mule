@@ -30,7 +30,7 @@ import org.mule.extension.file.internal.command.LocalRenameCommand;
 import org.mule.extension.file.internal.command.LocalWriteCommand;
 import org.mule.extension.file.internal.lock.LocalPathLock;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 
 import java.nio.file.OpenOption;
 import java.nio.file.Path;

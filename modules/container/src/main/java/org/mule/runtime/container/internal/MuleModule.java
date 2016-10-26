@@ -8,9 +8,9 @@
 package org.mule.runtime.container.internal;
 
 import static java.util.Collections.unmodifiableSet;
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.Set;
 

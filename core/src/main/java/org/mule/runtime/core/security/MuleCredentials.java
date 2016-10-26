@@ -13,7 +13,7 @@ import org.mule.runtime.core.api.security.CryptoFailureException;
 import org.mule.runtime.core.api.security.EncryptionStrategyNotFoundException;
 import org.mule.runtime.core.api.security.SecurityManager;
 import org.mule.runtime.core.config.i18n.CoreMessages;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;

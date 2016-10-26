@@ -6,8 +6,8 @@
  */
 package org.mule.runtime.module.oauth2.internal;
 
-import org.mule.runtime.core.util.Preconditions;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.Preconditions;
+import org.mule.runtime.internal.utils.StringUtils;
 
 /**
  * State parameter encoder. Allows to encode and decode an resourceOwnerId in the authentication request state parameter.

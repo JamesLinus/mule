@@ -8,7 +8,7 @@ package org.mule.compatibility.config.spring.parsers.specific;
 
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.config.spring.parsers.generic.ChildDefinitionParser;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -8,7 +8,7 @@ package org.mule.runtime.module.xml.transformers.xml;
 
 import org.mule.runtime.module.xml.transformer.XStreamFactory;
 import org.mule.tck.junit4.AbstractMuleTestCase;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import com.thoughtworks.xstream.XStream;
 

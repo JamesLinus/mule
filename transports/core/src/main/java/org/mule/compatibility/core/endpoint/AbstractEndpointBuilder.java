@@ -34,7 +34,7 @@ import org.mule.runtime.core.AbstractAnnotatedObject;
 import org.mule.runtime.core.MessageExchangePattern;
 import org.mule.runtime.core.api.DefaultMuleException;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.MuleRuntimeException;
+import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.meta.NamedObject;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
@@ -56,7 +56,7 @@ import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.CollectionUtils;
 import org.mule.runtime.core.util.MapCombiner;
 import org.mule.runtime.core.util.ObjectNameHelper;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.SystemUtils;
 
 import java.io.Serializable;

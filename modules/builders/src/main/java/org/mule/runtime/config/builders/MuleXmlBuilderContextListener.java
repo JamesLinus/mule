@@ -9,7 +9,7 @@ package org.mule.runtime.config.builders;
 import org.mule.runtime.config.spring.SpringXmlConfigurationBuilder;
 import org.mule.runtime.core.MuleServer;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.config.ConfigurationException;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.context.MuleContextBuilder;
@@ -20,7 +20,7 @@ import org.mule.runtime.core.config.PropertiesMuleConfigurationFactory;
 import org.mule.runtime.core.context.DefaultMuleContextBuilder;
 import org.mule.runtime.core.context.DefaultMuleContextFactory;
 import org.mule.runtime.core.util.FilenameUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.File;
 

@@ -13,7 +13,7 @@ import org.mule.runtime.core.el.context.MessageContext;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 public class WildcardExpressionLanguageFuntion implements ExpressionLanguageFunction {
 

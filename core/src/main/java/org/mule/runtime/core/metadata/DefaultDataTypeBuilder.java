@@ -9,7 +9,7 @@ package org.mule.runtime.core.metadata;
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
-import static org.mule.runtime.core.util.Preconditions.checkNotNull;
+import static org.mule.runtime.internal.utils.Preconditions.checkNotNull;
 import static org.mule.runtime.core.util.generics.GenericsUtils.getCollectionType;
 
 import org.mule.runtime.api.message.Message;
@@ -20,7 +20,7 @@ import org.mule.runtime.api.metadata.DataTypeParamsBuilder;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.message.OutputHandler;
 import org.mule.runtime.core.util.ClassUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

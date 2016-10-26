@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.core.util;
 
+import org.mule.runtime.internal.utils.StringUtils;
+
 import java.util.LinkedList;
 import java.util.List;
 

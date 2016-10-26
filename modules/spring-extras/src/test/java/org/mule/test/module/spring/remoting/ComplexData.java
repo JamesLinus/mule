@@ -6,7 +6,7 @@
  */
 package org.mule.test.module.spring.remoting;
 
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.Serializable;
 

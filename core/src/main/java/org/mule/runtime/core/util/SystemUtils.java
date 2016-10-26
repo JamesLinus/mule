@@ -10,6 +10,8 @@ import static org.mule.runtime.core.api.config.MuleProperties.MULE_ENCODING_SYST
 
 import org.mule.runtime.core.api.DefaultMuleException;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.internal.utils.ArrayUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

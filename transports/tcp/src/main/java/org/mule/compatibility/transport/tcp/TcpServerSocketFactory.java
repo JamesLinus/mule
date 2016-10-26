@@ -8,7 +8,7 @@ package org.mule.compatibility.transport.tcp;
 
 import org.mule.compatibility.transport.tcp.i18n.TcpMessages;
 import org.mule.runtime.core.util.NetworkUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.IOException;
 import java.net.InetAddress;

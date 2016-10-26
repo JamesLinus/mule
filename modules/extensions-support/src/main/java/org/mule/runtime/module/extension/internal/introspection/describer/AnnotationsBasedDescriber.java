@@ -15,7 +15,7 @@ import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 import static org.mule.runtime.api.meta.model.connection.ConnectionManagementType.CACHED;
 import static org.mule.runtime.api.meta.model.connection.ConnectionManagementType.NONE;
 import static org.mule.runtime.api.meta.model.connection.ConnectionManagementType.POOLING;
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 import static org.mule.runtime.extension.api.annotation.Extension.DEFAULT_CONFIG_DESCRIPTION;
 import static org.mule.runtime.extension.api.annotation.Extension.DEFAULT_CONFIG_NAME;
 import static org.mule.runtime.module.extension.internal.introspection.describer.MuleExtensionAnnotationParser.getExceptionEnricherFactory;
@@ -46,7 +46,7 @@ import org.mule.runtime.api.meta.model.declaration.fluent.ParameterDeclarer;
 import org.mule.runtime.api.meta.model.declaration.fluent.ParameterizedDeclarer;
 import org.mule.runtime.api.meta.model.declaration.fluent.SourceDeclarer;
 import org.mule.runtime.api.meta.model.display.LayoutModel;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 import org.mule.runtime.core.util.CollectionUtils;
 import org.mule.runtime.extension.api.annotation.Configuration;
 import org.mule.runtime.extension.api.annotation.Expression;
@@ -111,8 +111,6 @@ import org.mule.runtime.module.extension.internal.model.property.SourceFactoryMo
 import org.mule.runtime.module.extension.internal.model.property.TypeRestrictionModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.executor.ReflectiveOperationExecutorFactory;
 import org.mule.runtime.module.extension.internal.runtime.source.DefaultSourceFactory;
-
-import com.google.common.collect.ImmutableList;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

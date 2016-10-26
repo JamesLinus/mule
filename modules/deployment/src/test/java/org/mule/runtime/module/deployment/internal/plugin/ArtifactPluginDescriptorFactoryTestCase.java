@@ -27,7 +27,7 @@ import org.mule.runtime.module.artifact.classloader.ClassLoaderLookupPolicy;
 import org.mule.runtime.deployment.model.api.plugin.ArtifactPluginDescriptor;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.runtime.core.util.FileUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

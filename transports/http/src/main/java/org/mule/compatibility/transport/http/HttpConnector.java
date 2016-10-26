@@ -20,7 +20,7 @@ import org.mule.compatibility.transport.http.ntlm.NTLMScheme;
 import org.mule.compatibility.transport.tcp.TcpConnector;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
@@ -29,7 +29,7 @@ import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.util.BooleanUtils;
 import org.mule.runtime.core.util.MapUtils;
 import org.mule.runtime.core.util.OneTimeWarning;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

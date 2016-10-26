@@ -17,7 +17,7 @@ import org.mule.runtime.core.api.security.tls.TlsConfiguration;
 import org.mule.runtime.module.tls.internal.DefaultTlsContextFactory;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.runtime.core.util.ClassUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

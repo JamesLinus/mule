@@ -12,7 +12,7 @@ import org.mule.runtime.core.api.exception.ObjectNotFoundException;
 import org.mule.runtime.core.api.locator.ConfigurationComponentLocator;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.construct.Flow;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 
 import java.util.List;
 

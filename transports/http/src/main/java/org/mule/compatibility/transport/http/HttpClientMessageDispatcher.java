@@ -15,7 +15,7 @@ import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.message.ExceptionPayload;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.connector.DispatchException;
@@ -26,7 +26,7 @@ import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.message.DefaultExceptionPayload;
 import org.mule.runtime.core.message.OutputHandler;
 import org.mule.runtime.core.transformer.TransformerChain;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.Serializable;

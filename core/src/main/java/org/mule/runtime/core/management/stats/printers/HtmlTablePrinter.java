@@ -6,7 +6,7 @@
  */
 package org.mule.runtime.core.management.stats.printers;
 
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.OutputStream;
 import java.io.Writer;

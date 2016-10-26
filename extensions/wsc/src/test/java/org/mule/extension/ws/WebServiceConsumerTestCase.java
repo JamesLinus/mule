@@ -18,7 +18,7 @@ import static org.mule.runtime.core.util.ClassUtils.withContextClassLoader;
 import org.mule.extension.ws.consumer.TestService;
 import org.mule.functional.junit4.MuleArtifactFunctionalTestCase;
 import org.mule.runtime.api.message.Message;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.tck.junit4.rule.DynamicPort;
 
 import javax.xml.ws.Endpoint;

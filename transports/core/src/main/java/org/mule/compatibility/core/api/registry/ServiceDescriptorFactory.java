@@ -18,7 +18,7 @@ import org.mule.runtime.core.api.registry.ServiceException;
 import org.mule.runtime.core.api.registry.ServiceType;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.util.ClassUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.Properties;
 

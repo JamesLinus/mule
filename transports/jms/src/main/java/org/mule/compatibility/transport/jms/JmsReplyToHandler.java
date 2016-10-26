@@ -17,12 +17,12 @@ import org.mule.compatibility.transport.jms.i18n.JmsMessages;
 import org.mule.compatibility.transport.jms.transformers.ObjectToJMSMessage;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.connector.DispatchException;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.util.StringMessageUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.List;
 

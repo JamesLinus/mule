@@ -27,14 +27,14 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 import org.mule.runtime.core.api.DefaultMuleException;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.message.InternalMessage;
-import org.mule.runtime.core.api.MuleRuntimeException;
+import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.session.DefaultMuleSession;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.module.http.internal.HttpParser;
 import org.mule.runtime.module.oauth2.internal.MuleEventLogger;
 import org.mule.runtime.module.oauth2.internal.OAuthConstants;

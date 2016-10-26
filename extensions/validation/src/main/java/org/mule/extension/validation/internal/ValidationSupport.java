@@ -15,7 +15,7 @@ import org.mule.extension.validation.api.ValidationResult;
 import org.mule.extension.validation.api.Validator;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.Locale;
 

@@ -6,7 +6,7 @@
  */
 package org.mule.runtime.module.extension.internal.introspection;
 
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getAnnotation;
 import org.mule.runtime.extension.api.annotation.ExclusiveOptionals;
 import org.mule.runtime.api.meta.model.EnrichableModel;

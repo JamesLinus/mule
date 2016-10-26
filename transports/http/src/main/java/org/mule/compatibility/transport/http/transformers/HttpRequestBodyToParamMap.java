@@ -14,7 +14,7 @@ import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.transformer.AbstractMessageTransformer;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.net.URI;
 import java.nio.charset.Charset;

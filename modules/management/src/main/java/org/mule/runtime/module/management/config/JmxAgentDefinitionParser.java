@@ -10,7 +10,7 @@ import org.mule.runtime.config.spring.parsers.AbstractMuleBeanDefinitionParser;
 import org.mule.runtime.config.spring.parsers.assembly.BeanAssembler;
 import org.mule.runtime.config.spring.parsers.processors.ProvideDefaultNameFromElement;
 import org.mule.runtime.module.management.agent.JmxAgentConfigurer;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;

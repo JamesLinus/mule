@@ -13,7 +13,7 @@ import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.routing.filter.Filter;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.util.IOUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.XMLSecureFactories;
 import org.mule.runtime.module.xml.transformer.DelayedResult;
 import org.mule.runtime.module.xml.util.MuleResourceResolver;

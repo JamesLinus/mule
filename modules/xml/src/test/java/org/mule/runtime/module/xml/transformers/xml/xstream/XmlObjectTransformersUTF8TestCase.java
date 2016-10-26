@@ -9,7 +9,7 @@ package org.mule.runtime.module.xml.transformers.xml.xstream;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.module.xml.transformer.XmlToObject;
 import org.mule.runtime.core.transformer.AbstractTransformerTestCase;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 
 import java.io.UnsupportedEncodingException;
 

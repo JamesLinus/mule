@@ -7,9 +7,9 @@
 
 package org.mule.functional.client;
 
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;

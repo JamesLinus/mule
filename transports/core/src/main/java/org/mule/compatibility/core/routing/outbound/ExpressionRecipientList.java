@@ -10,7 +10,7 @@ import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.routing.CouldNotRouteOutboundMessageException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.expression.ExpressionConfig;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;

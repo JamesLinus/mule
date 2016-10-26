@@ -10,13 +10,13 @@ import static org.mule.runtime.core.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.config.bootstrap.ArtifactType.DOMAIN;
 
 import org.mule.runtime.core.AbstractAgent;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.agent.Agent;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.registry.MuleRegistry;
 import org.mule.runtime.core.api.registry.RegistrationException;
 import org.mule.runtime.core.config.bootstrap.ArtifactType;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.rmi.server.RMIClientSocketFactory;
 import java.text.MessageFormat;

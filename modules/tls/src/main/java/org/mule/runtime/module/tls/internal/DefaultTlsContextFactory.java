@@ -11,13 +11,13 @@ import org.mule.runtime.core.api.lifecycle.CreateException;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.security.tls.TlsConfiguration;
-import org.mule.runtime.core.config.i18n.I18nMessageFactory;
+import org.mule.runtime.api.i18n.I18nMessageFactory;
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.api.tls.TlsContextKeyStoreConfiguration;
 import org.mule.runtime.api.tls.TlsContextTrustStoreConfiguration;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 import org.mule.runtime.core.util.FileUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import com.google.common.base.Joiner;
 

@@ -8,7 +8,7 @@ package org.mule.runtime.module.deployment.internal.application;
 
 import static org.mule.runtime.deployment.model.api.application.ApplicationDescriptor.DEFAULT_CONFIGURATION_RESOURCE;
 import org.mule.runtime.core.util.PropertiesUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.deployment.model.api.DeployableArtifactDescriptor;
 import org.mule.runtime.deployment.model.api.application.ApplicationDescriptor;
 

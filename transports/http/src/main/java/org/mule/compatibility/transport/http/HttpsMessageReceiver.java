@@ -13,7 +13,7 @@ import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.lifecycle.CreateException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.connector.ConnectException;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 public class HttpsMessageReceiver extends HttpMessageReceiver {
 

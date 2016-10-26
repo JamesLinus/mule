@@ -12,7 +12,7 @@ import org.mule.compatibility.core.api.endpoint.EndpointURI;
 import org.mule.compatibility.core.api.transport.Connector;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.util.ObjectNameHelper;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 /**
  * Generates consistent objects names for Mule components

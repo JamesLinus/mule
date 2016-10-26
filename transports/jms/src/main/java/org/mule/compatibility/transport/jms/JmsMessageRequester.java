@@ -18,7 +18,7 @@ import org.mule.runtime.core.api.transaction.Transaction;
 import org.mule.runtime.core.api.transaction.TransactionConfig;
 import org.mule.runtime.core.context.notification.TransactionNotification;
 import org.mule.runtime.core.transaction.TransactionCoordination;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import javax.jms.Destination;
 import javax.jms.Message;

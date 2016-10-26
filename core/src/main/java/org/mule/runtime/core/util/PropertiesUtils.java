@@ -6,10 +6,11 @@
  */
 package org.mule.runtime.core.util;
 
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
-import org.mule.runtime.core.api.MuleRuntimeException;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
+import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
-import org.mule.runtime.core.config.i18n.I18nMessage;
+import org.mule.runtime.api.i18n.I18nMessage;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

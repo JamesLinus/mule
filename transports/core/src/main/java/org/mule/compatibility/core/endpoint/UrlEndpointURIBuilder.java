@@ -7,7 +7,7 @@
 package org.mule.compatibility.core.endpoint;
 
 import org.mule.compatibility.core.api.endpoint.MalformedEndpointException;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.net.URI;
 import java.util.Properties;

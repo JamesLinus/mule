@@ -6,7 +6,7 @@
  */
 package org.mule.runtime.module.http.internal.listener;
 
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 public class ListenerPath {
 

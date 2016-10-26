@@ -9,7 +9,7 @@ package org.mule.runtime.config.spring.parsers.specific;
 import org.mule.runtime.core.component.DefaultJavaComponent;
 import org.mule.runtime.core.component.simple.StaticComponent;
 import org.mule.runtime.core.util.IOUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.IOException;
 import java.util.HashMap;

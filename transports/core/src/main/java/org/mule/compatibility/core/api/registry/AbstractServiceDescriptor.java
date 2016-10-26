@@ -7,7 +7,7 @@
 package org.mule.compatibility.core.api.registry;
 
 import org.mule.runtime.core.util.ClassUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.Map;
 import java.util.Properties;

@@ -8,7 +8,7 @@ package org.mule.runtime.core.construct;
 
 import static org.mule.runtime.core.api.processor.MessageProcessors.newChain;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.lifecycle.Lifecycle;
 import org.mule.runtime.core.api.processor.DynamicPipeline;
 import org.mule.runtime.core.api.processor.DynamicPipelineBuilder;
@@ -20,7 +20,7 @@ import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.processor.AbstractInterceptingMessageProcessor;
 import org.mule.runtime.core.processor.chain.DefaultMessageProcessorChainBuilder;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.UUID;
 
 import java.util.ArrayList;

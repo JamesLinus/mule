@@ -6,7 +6,7 @@
  */
 package org.mule.test.infrastructure.client.ftp;
 
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

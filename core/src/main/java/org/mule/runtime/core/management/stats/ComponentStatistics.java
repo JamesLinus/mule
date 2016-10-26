@@ -8,7 +8,7 @@ package org.mule.runtime.core.management.stats;
 
 import org.mule.runtime.core.api.management.stats.Statistics;
 import org.mule.runtime.core.management.stats.printers.SimplePrinter;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.PrintWriter;
 

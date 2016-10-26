@@ -26,7 +26,7 @@ import org.mule.runtime.core.component.AbstractComponent;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.functional.Either;
 import org.mule.runtime.core.routing.filters.ExpressionFilter;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -13,7 +13,7 @@ import static org.mule.runtime.core.api.processor.MessageProcessors.newChain;
 import static org.mule.runtime.core.util.rx.Exceptions.checkedFunction;
 import static reactor.core.publisher.Flux.from;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.el.ExpressionLanguage;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.processor.MessageProcessorPathElement;
@@ -22,7 +22,7 @@ import org.mule.runtime.core.metadata.DefaultTypedValue;
 import org.mule.runtime.core.processor.AbstractMessageProcessorOwner;
 import org.mule.runtime.core.session.DefaultMuleSession;
 import org.mule.runtime.core.util.NotificationUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;

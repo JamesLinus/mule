@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.core.config.i18n;
 
+import org.mule.runtime.api.i18n.I18nMessage;
+import org.mule.runtime.api.i18n.I18nMessageFactory;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.core.api.processor.Processor;
@@ -18,7 +20,7 @@ import org.mule.runtime.core.context.notification.ListenerSubscriptionPair;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.DateUtils;
 import org.mule.runtime.core.util.StringMessageUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.Date;

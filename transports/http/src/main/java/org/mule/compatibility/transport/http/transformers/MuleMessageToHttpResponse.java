@@ -29,7 +29,7 @@ import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.config.MuleManifest;
 import org.mule.runtime.core.message.GroupCorrelation;
 import org.mule.runtime.core.transformer.AbstractMessageTransformer;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.Serializable;

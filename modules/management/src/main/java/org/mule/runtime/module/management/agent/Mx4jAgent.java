@@ -7,14 +7,14 @@
 package org.mule.runtime.module.management.agent;
 
 import org.mule.runtime.core.AbstractAgent;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.config.MuleManifest;
 import org.mule.runtime.core.config.i18n.CoreMessages;
-import org.mule.runtime.core.config.i18n.I18nMessageFactory;
+import org.mule.runtime.api.i18n.I18nMessageFactory;
 import org.mule.runtime.core.util.BeanUtils;
 import org.mule.runtime.core.util.ClassUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.module.management.mbean.MBeanServerFactory;
 import org.mule.runtime.module.management.support.AutoDiscoveryJmxSupportFactory;
 import org.mule.runtime.module.management.support.JmxSupport;

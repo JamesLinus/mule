@@ -7,7 +7,7 @@
 
 package org.mule.runtime.core.api.debug;
 
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 
 /**
  * Provides debug information for an object's field that contains a simple value.

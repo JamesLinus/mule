@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.core.util;
 
+import org.mule.runtime.internal.utils.ArrayUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Method;

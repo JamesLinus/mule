@@ -12,7 +12,7 @@ import org.mule.extension.validation.api.Validator;
 import org.mule.extension.validation.api.NumberType;
 import org.mule.extension.validation.internal.validator.NumberValidator;
 import org.mule.runtime.core.api.Event;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;

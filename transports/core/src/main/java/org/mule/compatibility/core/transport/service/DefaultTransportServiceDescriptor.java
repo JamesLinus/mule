@@ -23,7 +23,7 @@ import org.mule.compatibility.core.endpoint.EndpointURIEndpointBuilder;
 import org.mule.compatibility.core.endpoint.UrlEndpointURIBuilder;
 import org.mule.runtime.core.MessageExchangePattern;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.transaction.TransactionFactory;
@@ -35,7 +35,7 @@ import org.mule.compatibility.core.session.SerializeAndEncodeSessionHandler;
 import org.mule.runtime.core.transaction.XaTransactionFactory;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.CollectionUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.SystemUtils;
 
 import java.util.ArrayList;

@@ -9,7 +9,7 @@ package org.mule.runtime.core.registry;
 import static org.mule.runtime.core.api.registry.TransformerResolver.RegistryAction.ADDED;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.meta.NameableObject;
 import org.mule.runtime.core.api.agent.Agent;
 import org.mule.runtime.core.api.construct.FlowConstruct;
@@ -31,7 +31,7 @@ import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.internal.registry.TypeBasedTransformerResolver;
 import org.mule.runtime.core.util.Predicate;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.UUID;
 
 import com.google.common.collect.ImmutableList;

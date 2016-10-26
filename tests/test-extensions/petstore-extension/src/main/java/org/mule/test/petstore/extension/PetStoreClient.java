@@ -13,8 +13,8 @@ import org.mule.runtime.core.api.config.ThreadingProfile;
 import java.util.Date;
 import java.util.List;
 
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
-import static org.mule.runtime.core.util.Preconditions.checkState;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
+import static org.mule.runtime.internal.utils.Preconditions.checkState;
 
 public class PetStoreClient {
 

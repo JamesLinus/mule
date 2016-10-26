@@ -6,7 +6,7 @@
  */
 package org.mule.runtime.module.management.support;
 
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.module.management.agent.ConfigurableJMXAuthenticator;
 import org.mule.runtime.module.management.agent.JmxApplicationAgent;
 

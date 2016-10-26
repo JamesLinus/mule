@@ -7,7 +7,7 @@
 package org.mule.runtime.core.config.pool;
 
 import org.mule.runtime.core.api.config.ThreadingProfile;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.concurrent.NamedThreadFactory;
 import org.mule.runtime.core.util.concurrent.WaitPolicy;
 

@@ -8,7 +8,7 @@ package org.mule.runtime.module.scripting.component;
 
 import static org.mule.runtime.core.config.i18n.CoreMessages.cannotLoadFromClasspath;
 import static org.mule.runtime.core.config.i18n.CoreMessages.propertiesNotSet;
-import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
+import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.core.util.IOUtils.getResourceAsStream;
 
 import org.mule.runtime.core.DefaultMuleEventContext;
@@ -23,7 +23,7 @@ import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.el.context.FlowVariableMapContext;
 import org.mule.runtime.core.el.context.SessionVariableMapContext;
 import org.mule.runtime.core.util.CollectionUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

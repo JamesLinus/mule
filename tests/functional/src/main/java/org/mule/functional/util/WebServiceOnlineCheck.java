@@ -7,7 +7,7 @@
 package org.mule.functional.util;
 
 import org.mule.runtime.core.util.IOUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
 import java.io.BufferedReader;

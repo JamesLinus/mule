@@ -18,7 +18,7 @@ import org.mule.runtime.core.api.context.MuleContextFactory;
 import org.mule.runtime.core.config.ConfigResource;
 import org.mule.runtime.core.context.DefaultMuleContextFactory;
 import org.mule.runtime.core.util.IOUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.core.util.XMLSecureFactories;
 
 import java.io.InputStream;

@@ -8,14 +8,14 @@
 package org.mule.extension.http.internal;
 
 import static java.lang.String.format;
-import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
+import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
 import org.mule.extension.http.api.HttpRequestAttributes;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.util.IOUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.module.http.internal.component.ResourceNotFoundException;

@@ -12,11 +12,11 @@ import org.mule.runtime.core.api.security.TlsDirectKeyStore;
 import org.mule.runtime.core.api.security.TlsDirectTrustStore;
 import org.mule.runtime.core.api.security.TlsIndirectKeyStore;
 import org.mule.runtime.core.config.i18n.CoreMessages;
-import org.mule.runtime.core.util.ArrayUtils;
+import org.mule.runtime.internal.utils.ArrayUtils;
 import org.mule.runtime.core.util.FileUtils;
 import org.mule.runtime.core.util.IOUtils;
 import org.mule.runtime.core.util.SecurityUtils;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -7,7 +7,7 @@
 package org.mule.runtime.core.util.concurrent;
 
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.util.StringUtils;
+import org.mule.runtime.internal.utils.StringUtils;
 
 /**
  * Encapsulates thread naming logic for Mule standalone and embedded scenarios.

@@ -7,8 +7,8 @@
 
 package org.mule.runtime.module.deployment.internal;
 
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
-import org.mule.runtime.core.util.StringUtils;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
+import org.mule.runtime.internal.utils.StringUtils;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderManager;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderRepository;

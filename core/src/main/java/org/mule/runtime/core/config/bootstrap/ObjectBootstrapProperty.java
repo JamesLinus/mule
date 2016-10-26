@@ -7,8 +7,8 @@
 
 package org.mule.runtime.core.config.bootstrap;
 
-import static org.mule.runtime.core.util.Preconditions.checkArgument;
-import org.mule.runtime.core.util.StringUtils;
+import static org.mule.runtime.internal.utils.Preconditions.checkArgument;
+import org.mule.runtime.internal.utils.StringUtils;
 
 /**
  * Defines a bootstrap property for a generic object
