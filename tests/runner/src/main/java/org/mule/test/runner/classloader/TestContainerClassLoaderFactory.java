@@ -20,6 +20,8 @@ import org.mule.runtime.module.artifact.descriptor.ArtifactDescriptor;
 
 import com.google.common.collect.ImmutableSet;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -37,7 +39,6 @@ public class TestContainerClassLoaderFactory extends ContainerClassLoaderFactory
 
   private final Set<String> extraBootPackages;
   private final URL[] urls;
-  private final ClassLoader classLoader;
 
   /**
    * Factory class that extends the default way to create a container {@link ArtifactClassLoader} in order to support the
@@ -51,7 +52,6 @@ public class TestContainerClassLoaderFactory extends ContainerClassLoaderFactory
     this.extraBootPackages = ImmutableSet.<String>builder().addAll(super.getBootPackages()).addAll(extraBootPackages)
         .addAll(new JreModuleDiscoverer().discover().get(0).getExportedPackages()).build();
     this.urls = urls;
-    this.classLoader = new URLClassLoader(urls, null);
   }
 
   /**
@@ -63,10 +63,16 @@ public class TestContainerClassLoaderFactory extends ContainerClassLoaderFactory
    */
   @Override
   public ArtifactClassLoader createContainerClassLoader(final ClassLoader parentClassLoader) {
-    final List<MuleModule> muleModules = withContextClassLoader(classLoader, () -> discoverModules());
-    final ClassLoaderLookupPolicy containerLookupPolicy = getContainerClassLoaderLookupPolicy(muleModules);
+    try {
+      try (URLClassLoader classLoader = new URLClassLoader(urls, null)) {
+        final List<MuleModule> muleModules = withContextClassLoader(classLoader, () -> discoverModules());
+        final ClassLoaderLookupPolicy containerLookupPolicy = getContainerClassLoaderLookupPolicy(muleModules);
 
-    return createArtifactClassLoader(parentClassLoader, muleModules, containerLookupPolicy, new ArtifactDescriptor("mule"));
+        return createArtifactClassLoader(parentClassLoader, muleModules, containerLookupPolicy, new ArtifactDescriptor("mule"));
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /**
@@ -95,8 +101,14 @@ public class TestContainerClassLoaderFactory extends ContainerClassLoaderFactory
     final ArtifactClassLoader containerClassLoader =
         new MuleArtifactClassLoader(containerDescriptor.getName(), containerDescriptor, urls, parentClassLoader,
                                     new MuleClassLoaderLookupPolicy(Collections.emptyMap(), getBootPackages()));
-    return createContainerFilteringClassLoader(withContextClassLoader(classLoader, () -> discoverModules()),
-                                               containerClassLoader);
+    try {
+      try (URLClassLoader classLoader = new URLClassLoader(urls, null)) {
+        return createContainerFilteringClassLoader(withContextClassLoader(classLoader, () -> discoverModules()),
+                                                   containerClassLoader);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /**
@@ -113,7 +125,13 @@ public class TestContainerClassLoaderFactory extends ContainerClassLoaderFactory
    * @return uses only the set of {@link URL}s defined for the container to create the {@link ClassLoaderLookupPolicy}
    */
   public ClassLoaderLookupPolicy getContainerClassLoaderLookupPolicy() {
-    return withContextClassLoader(classLoader, () -> super.getContainerClassLoaderLookupPolicy(discoverModules()));
+    try {
+      try (URLClassLoader classLoader = new URLClassLoader(urls, null)) {
+        return withContextClassLoader(classLoader, () -> super.getContainerClassLoaderLookupPolicy(discoverModules()));
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /**
