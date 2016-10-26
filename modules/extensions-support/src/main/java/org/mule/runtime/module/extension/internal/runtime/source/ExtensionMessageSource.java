@@ -91,6 +91,7 @@ public class ExtensionMessageSource extends ExtensionComponent implements Messag
     if (sourceAdapter == null) {
       sourceAdapter =
           sourceAdapterFactory.createAdapter(getConfiguration(getInitialiserEvent(muleContext)), createSourceCallbackFactory());
+      muleContext.getInjector().inject(sourceAdapter);
       sourceAdapter.setFlowConstruct(flowConstruct);
     }
   }
@@ -254,10 +255,10 @@ public class ExtensionMessageSource extends ExtensionComponent implements Messag
         Exception exception = exceptionEnricherManager.processException(e);
         Optional<ConnectionException> connectionException = extractConnectionException(exception);
         if (connectionException.isPresent()) {
-          throw exception;
-        } else {
-          context.setFailed(exception);
+          exception = connectionException.get();
         }
+
+        throw exception;
       }
     }
 

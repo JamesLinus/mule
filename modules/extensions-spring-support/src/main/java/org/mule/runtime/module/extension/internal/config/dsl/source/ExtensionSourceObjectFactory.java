@@ -141,7 +141,7 @@ public class ExtensionSourceObjectFactory extends AbstractExtensionObjectFactory
   private SourceAdapterFactory getSourceFactory(ResolverSet nonCallbackParameters,
                                                 ResolverSet successCallbackParameters,
                                                 ResolverSet errorCallbackParameters) {
-    return (configurationInstance -> {
+    return (configurationInstance, sourceCallbackFactory) -> {
       Source source = MuleExtensionUtils.getSourceFactory(sourceModel).createSource();
       try {
         source = new SourceConfigurer(sourceModel, nonCallbackParameters, muleContext).configure(source);
@@ -149,6 +149,7 @@ public class ExtensionSourceObjectFactory extends AbstractExtensionObjectFactory
                                  sourceModel,
                                  source,
                                  configurationInstance,
+                                 sourceCallbackFactory,
                                  successCallbackParameters,
                                  errorCallbackParameters);
       } catch (Exception e) {

@@ -9,7 +9,7 @@ package org.mule.runtime.module.extension.internal.runtime.source;
 import org.mule.runtime.extension.api.runtime.source.SourceCallback;
 
 @FunctionalInterface
-interface SourceCallbackFactory {
+public interface SourceCallbackFactory {
 
   SourceCallback createSourceCallback(SourceCompletionHandlerFactory completionHandlerFactory);
 }

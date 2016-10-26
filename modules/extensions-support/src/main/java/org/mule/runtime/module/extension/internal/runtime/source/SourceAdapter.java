@@ -174,6 +174,7 @@ public final class SourceAdapter implements Startable, Stoppable, FlowConstructA
     try {
       setConfiguration(configurationInstance);
       setConnection();
+      muleContext.getInjector().inject(source);
       source.onStart(createSourceCallback());
     } catch (Exception e) {
       throw new DefaultMuleException(e);
@@ -185,7 +186,7 @@ public final class SourceAdapter implements Startable, Stoppable, FlowConstructA
     try {
       source.onStop();
     } catch (Exception e) {
-      throw new MuleRuntimeException(e);
+      throw new DefaultMuleException(e);
     } finally {
       releaseConnection();
     }

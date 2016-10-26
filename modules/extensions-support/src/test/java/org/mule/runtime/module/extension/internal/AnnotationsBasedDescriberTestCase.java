@@ -125,6 +125,7 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
   private static final String EXTENDED_CONFIG_DESCRIPTION = "extendedDescription";
   private static final String SOURCE_NAME = "ListenPayments";
   private static final String SOURCE_PARAMETER = "initialBatchNumber";
+  private static final String SOURCE_CALLBACK_PARAMETER = "payment";
   private static final String SAY_MY_NAME_OPERATION = "sayMyName";
   private static final String GET_ENEMY_OPERATION = "getEnemy";
   private static final String KILL_OPERATION = "kill";
@@ -609,9 +610,10 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
     assertThat(source.getName(), is(SOURCE_NAME));
 
     List<ParameterDeclaration> parameters = source.getParameters();
-    assertThat(parameters, hasSize(2));
+    assertThat(parameters, hasSize(3));
 
-    assertParameter(parameters, SOURCE_PARAMETER, "", toMetadataType(int.class), true, SUPPORTED, null);
+    assertParameter(parameters, SOURCE_PARAMETER, "", toMetadataType(int.class), true, NOT_SUPPORTED, null);
+    assertParameter(parameters, SOURCE_CALLBACK_PARAMETER, "", toMetadataType(Long.class), true, SUPPORTED, null);
     ImplementingTypeModelProperty typeModelProperty = source.getModelProperty(ImplementingTypeModelProperty.class).get();
     assertThat(typeModelProperty.getType(), equalTo(HeisenbergSource.class));
   }
