@@ -7,7 +7,6 @@
 package org.mule.runtime.deployment.model.internal.plugin.moved.dependency;
 
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.ArtifactDependency;
-import org.mule.runtime.deployment.model.api.plugin.moved.dependency.Scope;
 
 /**
  * Default implementation of ArtifactDependency
@@ -20,16 +19,13 @@ public class DefaultArtifactDependency implements ArtifactDependency {
   private final String version;
   private final String type;
   private final String classifier;
-  private final Scope scope; //TODO TODO MULE-1078 remove
 
-  public DefaultArtifactDependency(String groupId, String artifactId, String version, String type, String classifier,
-                                   Scope scope) {
+  public DefaultArtifactDependency(String groupId, String artifactId, String version, String type, String classifier) {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.version = version;
     this.type = type;
-    this.classifier = classifier;
-    this.scope = scope;
+    this.classifier = classifier == null ? "" : classifier;
   }
 
   @Override
@@ -57,11 +53,6 @@ public class DefaultArtifactDependency implements ArtifactDependency {
   }
 
   @Override
-  public Scope getScope() {
-    return scope;
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -70,8 +61,7 @@ public class DefaultArtifactDependency implements ArtifactDependency {
       return false;
     }
 
-    DefaultArtifactDependency that =
-        (DefaultArtifactDependency) o;
+    DefaultArtifactDependency that = (DefaultArtifactDependency) o;
 
     if (!groupId.equals(that.groupId)) {
       return false;
@@ -79,16 +69,13 @@ public class DefaultArtifactDependency implements ArtifactDependency {
     if (!artifactId.equals(that.artifactId)) {
       return false;
     }
-    if (version != null ? !version.equals(that.version) : that.version != null) {
+    if (!version.equals(that.version)) {
       return false;
     }
-    if (type != null ? !type.equals(that.type) : that.type != null) {
+    if (!type.equals(that.type)) {
       return false;
     }
-    if (classifier != null ? !classifier.equals(that.classifier) : that.classifier != null) {
-      return false;
-    }
-    return scope == that.scope;
+    return classifier.equals(that.classifier);
 
   }
 
@@ -96,10 +83,9 @@ public class DefaultArtifactDependency implements ArtifactDependency {
   public int hashCode() {
     int result = groupId.hashCode();
     result = 31 * result + artifactId.hashCode();
-    result = 31 * result + (version != null ? version.hashCode() : 0);
-    result = 31 * result + (type != null ? type.hashCode() : 0);
-    result = 31 * result + (classifier != null ? classifier.hashCode() : 0);
-    result = 31 * result + (scope != null ? scope.hashCode() : 0);
+    result = 31 * result + version.hashCode();
+    result = 31 * result + type.hashCode();
+    result = 31 * result + classifier.hashCode();
     return result;
   }
 }

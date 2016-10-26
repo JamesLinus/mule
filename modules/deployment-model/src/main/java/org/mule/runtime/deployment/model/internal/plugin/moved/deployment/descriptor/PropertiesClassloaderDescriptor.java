@@ -8,7 +8,6 @@ package org.mule.runtime.deployment.model.internal.plugin.moved.deployment.descr
 
 import static java.lang.String.format;
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.ArtifactDependency;
-import org.mule.runtime.deployment.model.api.plugin.moved.dependency.Scope;
 import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
 import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 import org.mule.runtime.deployment.model.internal.plugin.moved.dependency.DefaultArtifactDependency;
@@ -30,7 +29,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Represents a TODO-10785
+ * Represents a TODO MULE-10785
  *
  * @since 4.0
  */
@@ -113,14 +112,13 @@ public class PropertiesClassloaderDescriptor implements ClassloaderDescriptor {
     String dependenciesString = properties.getProperty("plugin.dependencies");
     if (StringUtils.isNotBlank(dependenciesString)) {
       for (String dependencyName : dependenciesString.split(",")) {
-        //TODO WIP until there's a better way to consume the information from the plugin.properties file
+        //TODO MULE-10785 WIP until there's a better way to consume the information from the plugin.properties file
         dependencies
             .add(new DefaultArtifactDependency(dependencyName + "-groupId",
                                                dependencyName,
                                                "1.2.44-hf1",
                                                "jar",
-                                               "mule-plugin",
-                                               Scope.PROVIDED));
+                                               "mule-plugin"));
       }
     }
     return dependencies;

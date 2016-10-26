@@ -159,7 +159,6 @@ public class ArtifactPluginDescriptorFactoryTestCase extends AbstractMuleTestCas
       }
 
       assertRuntimeLibs(pluginDescriptor);
-      assertThat(pluginDescriptor.getRootFolder(), equalTo(pluginFolder));
       assertThat(pluginDescriptor.getClassLoaderFilter(), is(classLoaderFilter));
     }
 

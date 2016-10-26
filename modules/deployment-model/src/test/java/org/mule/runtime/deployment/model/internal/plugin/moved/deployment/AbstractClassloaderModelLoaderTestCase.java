@@ -15,7 +15,6 @@ import org.mule.runtime.deployment.model.api.plugin.moved.MalformedPluginExcepti
 import org.mule.runtime.deployment.model.api.plugin.moved.Plugin;
 import org.mule.runtime.deployment.model.api.plugin.moved.PluginDescriptor;
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.ArtifactDependency;
-import org.mule.runtime.deployment.model.api.plugin.moved.dependency.Scope;
 import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
 import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 import org.mule.runtime.deployment.model.internal.plugin.moved.dependency.DefaultArtifactDependency;
@@ -156,12 +155,9 @@ public abstract class AbstractClassloaderModelLoaderTestCase {
 
   private void assertDependencies(ClassloaderModel classloaderModel) {
     if (hasJsonDescriptor) {
-      assertThat(classloaderModel.getDependencies().size(), is(4));
+      assertThat(classloaderModel.getDependencies().size(), is(1));
       ArtifactDependency[] artifactDependencies = {
-          new DefaultArtifactDependency("org.mule.modules", "mule-module-sockets", "4.0.0", "jar", "mule-plugin", Scope.PROVIDED),
-          new DefaultArtifactDependency("org.mule", "mule-core", "4.0.0", "jar", null, Scope.PROVIDED),
-          new DefaultArtifactDependency("com.google.guava", "guava", null, "jar", null, null),
-          new DefaultArtifactDependency("junit", "junit", "4.11", "jar", null, Scope.TEST)
+          new DefaultArtifactDependency("org.mule.modules", "mule-module-sockets", "4.0.0", "jar", "mule-plugin")
       };
       assertThat(classloaderModel.getDependencies(), containsInAnyOrder(artifactDependencies));
     } else {

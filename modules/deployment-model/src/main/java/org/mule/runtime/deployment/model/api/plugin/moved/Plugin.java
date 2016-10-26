@@ -17,7 +17,7 @@ import java.net.URL;
 
 /**
  * Marker interface to load {@link PluginDescriptor} from several sources (ZIP, a folder)
- *
+ * TODO MULE-10785
  * @since 4.0
  */
 public interface Plugin {

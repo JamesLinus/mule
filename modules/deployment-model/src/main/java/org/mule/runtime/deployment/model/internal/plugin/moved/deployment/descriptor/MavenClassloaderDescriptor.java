@@ -8,7 +8,6 @@ package org.mule.runtime.deployment.model.internal.plugin.moved.deployment.descr
 
 import static java.lang.String.format;
 import org.mule.runtime.deployment.model.api.plugin.moved.dependency.ArtifactDependency;
-import org.mule.runtime.deployment.model.api.plugin.moved.dependency.Scope;
 import org.mule.runtime.deployment.model.api.plugin.moved.deployment.ClassloaderModel;
 import org.mule.runtime.deployment.model.api.plugin.moved.deployment.MalformedClassloaderModelException;
 import org.mule.runtime.deployment.model.internal.plugin.moved.dependency.DefaultArtifactDependency;
@@ -89,12 +88,12 @@ public class MavenClassloaderDescriptor implements ClassloaderDescriptor {
     try {
       Model model = new MavenXpp3Reader().read(pomInputStream.get());
       for (Dependency dependency : model.getDependencies()) {
-        ArtifactDependency artifactDependency =
-            new DefaultArtifactDependency(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(),
-                                          dependency.getType(), dependency.getClassifier(),
-                                          dependency.getScope() != null ? Scope.valueOf(dependency.getScope().toUpperCase())
-                                              : null);
-        dependencies.add(artifactDependency);
+        if ("mule-plugin".equals(dependency.getClassifier()) && !"test".equalsIgnoreCase(dependency.getScope())) {
+          ArtifactDependency artifactDependency =
+              new DefaultArtifactDependency(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(),
+                                            dependency.getType(), dependency.getClassifier());
+          dependencies.add(artifactDependency);
+        }
       }
     } catch (IOException | XmlPullParserException e) {
       throw new MalformedClassloaderModelException("There was a problem while reading the pom file", e);

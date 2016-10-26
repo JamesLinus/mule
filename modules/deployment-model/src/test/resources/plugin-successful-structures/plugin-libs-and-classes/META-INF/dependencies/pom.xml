@@ -32,6 +32,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <type>jar</type>
+            <version>1.0.0</version>
             <artifactId>guava</artifactId>
         </dependency>
         <!--test dependencies -->

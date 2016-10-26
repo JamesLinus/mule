@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.deployment.model.api;
 
+import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderFilter;
+import org.mule.runtime.module.artifact.classloader.DefaultArtifactClassLoaderFilter;
 import org.mule.runtime.module.artifact.descriptor.ArtifactDescriptor;
 
 import java.io.File;
@@ -19,9 +21,9 @@ public class DeployableArtifactDescriptor extends ArtifactDescriptor {
   public static final String DEFAULT_DEPLOY_PROPERTIES_RESOURCE = "mule-deploy.properties";
 
   private boolean redeploymentEnabled = true;
-  private URL[] runtimeLibs = new URL[0];
-  private URL[] sharedRuntimeLibs = new URL[0];
-  private File location;
+  private ArtifactClassLoaderFilter classLoaderFilter = DefaultArtifactClassLoaderFilter.NULL_CLASSLOADER_FILTER; //TODO MULE-10785 this one must become a ClassloaderModel
+  private URL[] runtimeLibs = new URL[0]; //TODO MULE-10785 this one should be loaded dinamically
+  private File location; //TODO MULE-10785 use this one to calculate the /classes and /lib/pepe.jar, /lib/pepe2.jar
 
   /**
    * Creates a new deployable artifact descriptor
@@ -40,20 +42,20 @@ public class DeployableArtifactDescriptor extends ArtifactDescriptor {
     this.redeploymentEnabled = redeploymentEnabled;
   }
 
+  public ArtifactClassLoaderFilter getClassLoaderFilter() {
+    return classLoaderFilter;
+  }
+
+  public void setClassLoaderFilter(ArtifactClassLoaderFilter classLoaderFilter) {
+    this.classLoaderFilter = classLoaderFilter;
+  }
+
   public URL[] getRuntimeLibs() {
     return runtimeLibs;
   }
 
   public void setRuntimeLibs(URL[] runtimeLibs) {
     this.runtimeLibs = runtimeLibs;
-  }
-
-  public URL[] getSharedRuntimeLibs() {
-    return sharedRuntimeLibs;
-  }
-
-  public void setSharedRuntimeLibs(URL[] sharedRuntimeLibs) {
-    this.sharedRuntimeLibs = sharedRuntimeLibs;
   }
 
   /**

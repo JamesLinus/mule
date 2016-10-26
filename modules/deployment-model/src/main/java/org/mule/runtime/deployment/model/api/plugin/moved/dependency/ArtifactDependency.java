@@ -37,10 +37,4 @@ public interface ArtifactDependency {
    * @return The classifier of the dependency, e.g. "mule-plugin"
    */
   String getClassifier();
-
-  /**
-   * @return The scope of the dependency.
-   * TODO MULE-10785 remove this class
-   */
-  Scope getScope();
 }

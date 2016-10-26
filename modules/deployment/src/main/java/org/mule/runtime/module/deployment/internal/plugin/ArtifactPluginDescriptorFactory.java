@@ -61,7 +61,7 @@ public class ArtifactPluginDescriptorFactory implements ArtifactDescriptorFactor
 
     final String pluginName = pluginFolder.getName();
     final ArtifactPluginDescriptor descriptor = new ArtifactPluginDescriptor(pluginName);
-    descriptor.setRootFolder(pluginFolder);
+    //descriptor.setRootFolder(pluginFolder);
 
     final File pluginPropsFile = new File(pluginFolder, PLUGIN_PROPERTIES);
     if (pluginPropsFile.exists()) {
