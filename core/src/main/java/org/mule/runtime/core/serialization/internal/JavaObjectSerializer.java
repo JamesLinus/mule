@@ -17,6 +17,7 @@ import org.mule.runtime.core.api.serialization.SerializationProtocol;
  */
 public class JavaObjectSerializer implements ObjectSerializer, MuleContextAware {
 
+
   private volatile JavaExternalSerializerProtocol javaSerializerProtocol = new JavaExternalSerializerProtocol();
 
   @Override
