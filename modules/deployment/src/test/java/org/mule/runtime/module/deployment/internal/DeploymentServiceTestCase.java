@@ -83,6 +83,7 @@ import org.mule.runtime.deployment.model.internal.domain.DomainClassLoaderFactor
 import org.mule.runtime.deployment.model.internal.nativelib.DefaultNativeLibraryFinderFactory;
 import org.mule.runtime.module.artifact.builder.TestArtifactDescriptor;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
+import org.mule.runtime.module.artifact.net.MulePluginUrlStreamHandler;
 import org.mule.runtime.module.deployment.api.DeploymentListener;
 import org.mule.runtime.module.deployment.internal.application.TestApplicationFactory;
 import org.mule.runtime.module.deployment.internal.builder.ApplicationFileBuilder;
@@ -132,6 +133,12 @@ import org.mockito.verification.VerificationMode;
 
 @RunWith(Parameterized.class)
 public class DeploymentServiceTestCase extends AbstractMuleTestCase {
+
+  static {
+    //TODO MULE-10785 if not registered, tests of plugins in zip format will break as the protocol will be unkown
+    //Registering protocol
+    MulePluginUrlStreamHandler.register();
+  }
 
   private static final int FILE_TIMESTAMP_PRECISION_MILLIS = 1000;
   protected static final int DEPLOYMENT_TIMEOUT = 10000;
@@ -1507,6 +1514,7 @@ public class DeploymentServiceTestCase extends AbstractMuleTestCase {
     final ArtifactPluginFileBuilder pluginFileBuilder = new ArtifactPluginFileBuilder("bootstrapPlugin")
         .containingResource("plugin-bootstrap.properties", BOOTSTRAP_PROPERTIES)
         .containingClass(echoTestClassFile, "org/foo/EchoTest.class");
+        .configuredWith(EXPORTED_CLASS_PACKAGES_PROPERTY, "org.foo");
 
     ApplicationFileBuilder applicationFileBuilder = new ApplicationFileBuilder("app-with-plugin-bootstrap")
         .definedBy("app-with-plugin-bootstrap.xml").containingPlugin(pluginFileBuilder);
@@ -1647,7 +1655,7 @@ public class DeploymentServiceTestCase extends AbstractMuleTestCase {
 
   @Test
   public void deploysApplicationWithPluginDependingOnPlugin() throws Exception {
-
+    //TODO MULE-10785 this is one of the test to play with (no unzipping should be needed)
     ArtifactPluginFileBuilder dependantPlugin =
         new ArtifactPluginFileBuilder("dependantPlugin").configuredWith(EXPORTED_CLASS_PACKAGES_PROPERTY, "org.foo.echo")
             .containingClass(pluginEcho3TestClassFile, "org/foo/echo/Plugin3Echo.class")
