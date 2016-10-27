@@ -10,8 +10,7 @@ package org.mule.runtime.module.artifact.classloader;
 /**
  * Provides access to the {@link ClassLoader} registered on the container.
  */
-public interface ClassLoaderRepository
-{
+public interface ClassLoaderRepository {
 
   /**
    * Returns a class loader with a given ID.

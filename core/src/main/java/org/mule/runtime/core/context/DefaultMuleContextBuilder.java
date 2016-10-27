@@ -133,15 +133,12 @@ public class DefaultMuleContextBuilder implements MuleContextBuilder {
     return muleContext;
   }
 
-  private void getObjectSerializer(DefaultMuleContext muleContext)
-  {
-    if (objectSerializer == null)
-    {
+  private void getObjectSerializer(DefaultMuleContext muleContext) {
+    if (objectSerializer == null) {
       objectSerializer = new JavaObjectSerializer();
     }
 
-    if (objectSerializer instanceof MuleContextAware)
-    {
+    if (objectSerializer instanceof MuleContextAware) {
       ((MuleContextAware) objectSerializer).setMuleContext(muleContext);
     }
 
@@ -194,8 +191,7 @@ public class DefaultMuleContextBuilder implements MuleContextBuilder {
   }
 
   @Override
-  public void setObjectSerializer(ObjectSerializer objectSerializer)
-  {
+  public void setObjectSerializer(ObjectSerializer objectSerializer) {
     this.objectSerializer = objectSerializer;
   }
 

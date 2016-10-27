@@ -80,63 +80,48 @@ public abstract class ArtifactFunctionalTestCase extends FunctionalTestCase {
   private static ClassLoaderRepository classLoaderRepository;
 
   @BeforeClass
-  public static void configureClassLoaderRepository()
-  {
+  public static void configureClassLoaderRepository() {
     classLoaderRepository = new TestClassLoaderRepository();
   }
 
   @Override
-  protected ObjectSerializer getObjectSerializer()
-  {
+  protected ObjectSerializer getObjectSerializer() {
     return new ArtifactObjectSerializer(classLoaderRepository);
   }
 
-  private static class TestClassLoaderRepository implements ClassLoaderRepository
-  {
+  private static class TestClassLoaderRepository implements ClassLoaderRepository {
 
     private Map<String, ClassLoader> classLoaders = new HashMap<>();
 
-    public TestClassLoaderRepository()
-    {
+    public TestClassLoaderRepository() {
       registerClassLoader(Thread.currentThread().getContextClassLoader());
       registerClassLoader(containerClassLoader);
-      for (Object classLoader : serviceClassLoaders)
-      {
+      for (Object classLoader : serviceClassLoaders) {
         registerClassLoader(classLoader);
       }
-      for (Object classLoader : pluginClassLoaders)
-      {
+      for (Object classLoader : pluginClassLoaders) {
         registerClassLoader(classLoader);
       }
     }
 
-    private void registerClassLoader(Object classLoader)
-    {
-      if (isArtifactClassLoader(classLoader))
-      {
-        try
-        {
+    private void registerClassLoader(Object classLoader) {
+      if (isArtifactClassLoader(classLoader)) {
+        try {
           Method getArtifactIdMethod = classLoader.getClass().getMethod("getArtifactId");
           String artifactId = (String) getArtifactIdMethod.invoke(classLoader);
           classLoaders.put(artifactId, (ClassLoader) classLoader);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
           throw new RuntimeException(e);
         }
       }
 
     }
 
-    private boolean isArtifactClassLoader(Object classLoader)
-    {
+    private boolean isArtifactClassLoader(Object classLoader) {
       Class clazz = classLoader.getClass();
-      while (clazz.getSuperclass() != null)
-      {
-        for (Class interfaceClass : clazz.getInterfaces())
-        {
-          if (interfaceClass.getName().equals(ArtifactClassLoader.class.getName()))
-          {
+      while (clazz.getSuperclass() != null) {
+        for (Class interfaceClass : clazz.getInterfaces()) {
+          if (interfaceClass.getName().equals(ArtifactClassLoader.class.getName())) {
             return true;
           }
         }
@@ -147,18 +132,14 @@ public abstract class ArtifactFunctionalTestCase extends FunctionalTestCase {
     }
 
     @Override
-    public ClassLoader find(String classLoaderId)
-    {
+    public ClassLoader find(String classLoaderId) {
       return classLoaders.get(classLoaderId);
     }
 
     @Override
-    public String getId(ClassLoader classLoader)
-    {
-      for (String key : classLoaders.keySet())
-      {
-        if (classLoaders.get(key) == classLoader)
-        {
+    public String getId(ClassLoader classLoader) {
+      for (String key : classLoaders.keySet()) {
+        if (classLoaders.get(key) == classLoader) {
           return key;
         }
       }

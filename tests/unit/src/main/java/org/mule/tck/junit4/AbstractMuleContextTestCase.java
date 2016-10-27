@@ -218,8 +218,7 @@ public abstract class AbstractMuleContextTestCase extends AbstractMuleTestCase {
     return context;
   }
 
-  protected ObjectSerializer getObjectSerializer()
-  {
+  protected ObjectSerializer getObjectSerializer() {
     return new JavaObjectSerializer();
   }
 

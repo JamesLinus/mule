@@ -19,8 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Tracks all the {@link ArtifactClassLoader} created on the container.
  */
-public class DefaultClassLoaderManager implements ArtifactClassLoaderManager, ClassLoaderRepository
-{
+public class DefaultClassLoaderManager implements ArtifactClassLoaderManager, ClassLoaderRepository {
 
   private final Map<String, ArtifactClassLoader> artifactClassLoaders = new ConcurrentHashMap<>();
 
@@ -53,8 +52,7 @@ public class DefaultClassLoaderManager implements ArtifactClassLoaderManager, Cl
   }
 
   @Override
-  public String getId(ClassLoader classLoader)
-  {
+  public String getId(ClassLoader classLoader) {
     return null;
   }
 

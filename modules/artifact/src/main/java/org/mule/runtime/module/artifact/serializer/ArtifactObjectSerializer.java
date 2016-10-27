@@ -19,8 +19,7 @@ public class ArtifactObjectSerializer implements ObjectSerializer, MuleContextAw
   private volatile JavaExternalSerializerProtocol javaExternalSerializerProtocol;
   private volatile CustomJavaSerializationProtocol javaInternalSerializerProtocol;
 
-  public ArtifactObjectSerializer(ClassLoaderRepository classLoaderRepository)
-  {
+  public ArtifactObjectSerializer(ClassLoaderRepository classLoaderRepository) {
     javaExternalSerializerProtocol = new JavaExternalSerializerProtocol();
     javaInternalSerializerProtocol = new CustomJavaSerializationProtocol(classLoaderRepository);
   }
