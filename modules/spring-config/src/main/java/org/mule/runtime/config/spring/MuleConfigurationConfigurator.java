@@ -6,7 +6,6 @@
  */
 package org.mule.runtime.config.spring;
 
-import org.mule.runtime.dsl.api.component.ObjectFactory;
 import org.mule.runtime.config.spring.util.ProcessingStrategyUtils;
 import org.mule.runtime.core.DefaultMuleContext;
 import org.mule.runtime.core.api.MuleContext;
@@ -23,7 +22,7 @@ import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.core.config.DefaultMuleConfiguration;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.config.i18n.I18nMessageFactory;
-import org.mule.runtime.core.serialization.internal.JavaObjectSerializer;
+import org.mule.runtime.dsl.api.component.ObjectFactory;
 
 import java.util.List;
 
@@ -114,15 +113,11 @@ public class MuleConfigurationConfigurator implements MuleContextAware, SmartFac
 
   private void applyDefaultIfNoObjectSerializerSet(DefaultMuleConfiguration configuration) {
     ObjectSerializer configuredSerializer = config.getDefaultObjectSerializer();
-    if (configuredSerializer == null) {
-      configuredSerializer = new JavaObjectSerializer();
-      ((MuleContextAware) configuredSerializer).setMuleContext(muleContext);
-      config.setDefaultObjectSerializer(configuredSerializer);
-    }
-
-    configuration.setDefaultObjectSerializer(configuredSerializer);
-    if (muleContext instanceof DefaultMuleContext) {
-      ((DefaultMuleContext) muleContext).setObjectSerializer(configuredSerializer);
+    if (configuredSerializer != null) {
+      configuration.setDefaultObjectSerializer(configuredSerializer);
+      if (muleContext instanceof DefaultMuleContext) {
+        ((DefaultMuleContext) muleContext).setObjectSerializer(configuredSerializer);
+      }
     }
   }
 
