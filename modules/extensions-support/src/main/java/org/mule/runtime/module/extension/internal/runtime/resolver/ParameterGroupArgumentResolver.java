@@ -11,8 +11,8 @@ import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticM
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.checkInstantiable;
 import org.mule.runtime.api.meta.model.EnrichableModel;
 import org.mule.runtime.core.api.MuleRuntimeException;
-import org.mule.runtime.extension.api.annotation.Parameter;
-import org.mule.runtime.extension.api.annotation.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 import org.mule.runtime.module.extension.internal.model.property.ParameterGroupModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.operation.ReflectiveMethodOperationExecutor;

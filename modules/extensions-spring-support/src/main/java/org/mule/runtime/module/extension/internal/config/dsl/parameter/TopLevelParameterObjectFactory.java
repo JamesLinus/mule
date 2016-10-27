@@ -16,10 +16,10 @@ import org.mule.metadata.api.model.ObjectType;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.context.MuleContextAware;
-import org.mule.runtime.extension.api.annotation.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.module.extension.internal.config.dsl.AbstractExtensionObjectFactory;
-import org.mule.runtime.module.extension.internal.runtime.DefaultObjectBuilder;
-import org.mule.runtime.module.extension.internal.runtime.ObjectBuilder;
+import org.mule.runtime.module.extension.internal.runtime.objectbuilder.DefaultObjectBuilder;
+import org.mule.runtime.module.extension.internal.runtime.objectbuilder.ObjectBuilder;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ObjectBuilderValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
 

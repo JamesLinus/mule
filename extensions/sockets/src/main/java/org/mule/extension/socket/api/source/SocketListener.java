@@ -9,6 +9,7 @@ package org.mule.extension.socket.api.source;
 import static java.lang.String.format;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.mule.extension.socket.internal.SocketUtils.WORK;
 import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
 import org.mule.extension.socket.api.SocketAttributes;
 import org.mule.extension.socket.api.config.ListenerConfig;
@@ -93,7 +94,7 @@ public final class SocketListener extends Source<InputStream, SocketAttributes> 
   @OnSuccess
   public void onSuccess(@Optional(defaultValue = "#[payload]") @XmlHints(allowReferences = false) Object responseValue,
                         SourceCallbackContext context) {
-    SocketWorker worker = context.getVariable("work");
+    SocketWorker worker = context.getVariable(WORK);
     worker.onComplete(responseValue);
   }
 

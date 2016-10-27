@@ -4,13 +4,11 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.extension.internal.runtime;
+package org.mule.runtime.module.extension.internal.runtime.objectbuilder;
 
-import static org.mule.runtime.core.util.ClassUtils.instanciateClass;
-import static org.mule.runtime.core.util.ClassUtils.withContextClassLoader;
+import static org.mule.runtime.module.extension.internal.runtime.objectbuilder.ObjectBuilderUtils.createInstance;
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.checkInstantiable;
-import org.mule.runtime.core.api.MuleRuntimeException;
-import org.mule.runtime.core.config.i18n.I18nMessageFactory;
+import org.mule.runtime.module.extension.internal.runtime.BaseObjectBuilder;
 
 /**
  * Default implementation of {@link ObjectBuilder} which creates instances through a provided {@link Class}.
@@ -36,10 +34,6 @@ public final class DefaultObjectBuilder<T> extends BaseObjectBuilder<T> {
    */
   @Override
   protected T instantiateObject() {
-    try {
-      return withContextClassLoader(prototypeClass.getClassLoader(), () -> instanciateClass(prototypeClass));
-    } catch (Exception e) {
-      throw new MuleRuntimeException(I18nMessageFactory.createStaticMessage("Could not create instance of " + prototypeClass), e);
-    }
+    return createInstance(prototypeClass);
   }
 }

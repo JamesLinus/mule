@@ -37,7 +37,7 @@ import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.exception.ErrorTypeRepository;
 import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.extension.api.annotation.Alias;
-import org.mule.runtime.extension.api.annotation.Parameter;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
@@ -97,6 +97,7 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
   private static final Logger LOGGER = getLogger(HttpListener.class);
   private static final String SERVER_PROBLEM = "Server encountered a problem";
   private static final String ERROR_RESPONSE_SETTINGS = "Error Response Settings";
+  private static final String RESPONSE_CONTEXT = "responseContext";
 
   @Inject
   private MuleContext muleContext;
@@ -157,7 +158,7 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
       responseBuilder = new HttpListenerSuccessResponseBuilder();
     }
 
-    HttpResponseContext context = callbackContext.getVariable("responseContext");
+    HttpResponseContext context = callbackContext.getVariable(RESPONSE_CONTEXT);
     HttpResponse httpResponse = buildResponse(responseBuilder, context.isSupportStreaming());
     final HttpResponseReadyCallback responseCallback = context.getResponseCallback();
     responseCallback.responseReady(httpResponse, getResponseFailureCallback(responseCallback));
@@ -250,8 +251,8 @@ public class HttpListener extends Source<Object, HttpRequestAttributes> {
           responseContext.setSupportStreaming(supportsTransferEncoding(httpVersion));
           responseContext.setResponseCallback(responseCallback);
 
-          SourceCallbackContext context = null;
-          context.addVariable("responseContext", responseContext);
+          SourceCallbackContext context = new SourceCallbackContext();
+          context.addVariable(RESPONSE_CONTEXT, responseContext);
 
           sourceCallback.handle(createResult(requestContext), context);
         } catch (HttpRequestParsingException | IllegalArgumentException e) {

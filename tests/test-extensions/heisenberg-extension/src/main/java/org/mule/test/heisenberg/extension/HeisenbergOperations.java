@@ -15,7 +15,7 @@ import org.mule.runtime.core.api.NestedProcessor;
 import org.mule.runtime.extension.api.ExtensionManager;
 import org.mule.runtime.extension.api.annotation.DataTypeParameters;
 import org.mule.runtime.extension.api.annotation.OnException;
-import org.mule.runtime.extension.api.annotation.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.RestrictedTo;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.Ignore;

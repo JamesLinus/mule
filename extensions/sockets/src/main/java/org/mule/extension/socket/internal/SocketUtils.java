@@ -34,6 +34,7 @@ public final class SocketUtils {
   }
 
   private static final String SOCKET_COULD_NOT_BE_CREATED = "%s Socket could not be created correctly";
+  public static final String WORK = "work";
 
   /**
    * UDP doesn't allow streaming and it always sends payload when dealing with a {@link Message}

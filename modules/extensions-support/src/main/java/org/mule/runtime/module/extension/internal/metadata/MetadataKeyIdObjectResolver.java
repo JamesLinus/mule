@@ -31,7 +31,7 @@ import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.extension.api.introspection.property.MetadataKeyIdModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.DeclaringMemberModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.QueryParameterModelProperty;
-import org.mule.runtime.module.extension.internal.runtime.DefaultObjectBuilder;
+import org.mule.runtime.module.extension.internal.runtime.objectbuilder.DefaultObjectBuilder;
 import org.mule.runtime.module.extension.internal.runtime.resolver.StaticValueResolver;
 
 import java.lang.reflect.Field;

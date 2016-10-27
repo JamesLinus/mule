@@ -55,11 +55,13 @@ import org.mule.runtime.extension.api.annotation.Extensible;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.ExtensionOf;
 import org.mule.runtime.extension.api.annotation.Operations;
-import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.RestrictedTo;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.param.Connection;
+import org.mule.runtime.extension.api.annotation.param.NotNull;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
 import org.mule.runtime.extension.api.annotation.source.EmitsResponse;
 import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
@@ -76,6 +78,7 @@ import org.mule.runtime.module.extension.internal.exception.IllegalConnectionPro
 import org.mule.runtime.module.extension.internal.exception.IllegalOperationModelDefinitionException;
 import org.mule.runtime.module.extension.internal.exception.IllegalParameterModelDefinitionException;
 import org.mule.runtime.module.extension.internal.exception.IllegalSourceModelDefinitionException;
+import org.mule.runtime.module.extension.internal.introspection.BasicTypeMetadataVisitor;
 import org.mule.runtime.module.extension.internal.introspection.describer.model.ComponentElement;
 import org.mule.runtime.module.extension.internal.introspection.describer.model.ConfigurationElement;
 import org.mule.runtime.module.extension.internal.introspection.describer.model.ConnectionProviderElement;
@@ -110,6 +113,7 @@ import org.mule.runtime.module.extension.internal.model.property.ImplementingPar
 import org.mule.runtime.module.extension.internal.model.property.ImplementingTypeModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.InfrastructureParameterModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.InterceptingModelProperty;
+import org.mule.runtime.module.extension.internal.model.property.NotNullModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.OperationExecutorModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.SourceCallbackModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.SourceFactoryModelProperty;
@@ -509,6 +513,7 @@ public final class AnnotationsBasedDescriber implements Describer {
 
         parameter.describedAs(EMPTY);
         parseExpressionSupport(extensionParameter, parameter);
+        parseNotNull(extensionParameter, parameter);
         addTypeRestrictions(extensionParameter, parameter);
         parseLayout(extensionParameter, parameter);
         addImplementingTypeModelProperty(extensionParameter, parameter);
@@ -517,18 +522,18 @@ public final class AnnotationsBasedDescriber implements Describer {
         declarerList.add(parameter);
       }
 
-      if (extensionParameter.isAnnotatedWith(org.mule.runtime.extension.api.annotation.ParameterGroup.class)) {
+      if (extensionParameter.isAnnotatedWith(ParameterGroup.class)) {
         final Type type = extensionParameter.getType();
         final List<ExtensionParameter> annotatedParameters =
             ImmutableList.<ExtensionParameter>builder().addAll(type.getAnnotatedFields(Parameter.class))
-                .addAll(type.getAnnotatedFields(org.mule.runtime.extension.api.annotation.ParameterGroup.class)).build();
+                .addAll(type.getAnnotatedFields(ParameterGroup.class)).build();
 
         // TODO: MULE-9220: Add a syntax validator for this
         if (extensionParameter.isAnnotatedWith(org.mule.runtime.extension.api.annotation.param.Optional.class)) {
           throw new IllegalParameterModelDefinitionException(format("@%s can not be applied along with @%s. Affected field [%s].",
                                                                     org.mule.runtime.extension.api.annotation.param.Optional.class
                                                                         .getSimpleName(),
-                                                                    org.mule.runtime.extension.api.annotation.ParameterGroup.class
+                                                                    ParameterGroup.class
                                                                         .getSimpleName(),
                                                                     extensionParameter.getName()));
         }
@@ -538,7 +543,7 @@ public final class AnnotationsBasedDescriber implements Describer {
             throw new IllegalParameterModelDefinitionException(
                                                                format(
                                                                       "@%s cannot be applied recursively within the same class but field '%s' was found inside class '%s'",
-                                                                      org.mule.runtime.extension.api.annotation.ParameterGroup.class
+                                                                      ParameterGroup.class
                                                                           .getSimpleName(),
                                                                       parameterGroupOwner.getName(),
                                                                       parameterGroupOwner.getType().getName()));
@@ -596,6 +601,28 @@ public final class AnnotationsBasedDescriber implements Describer {
     final Optional<Expression> annotation = extensionParameter.getAnnotation(Expression.class);
     if (annotation.isPresent()) {
       parameter.withExpressionSupport(getExpressionSupport(annotation.get()));
+    }
+  }
+
+  private void parseNotNull(ExtensionParameter extensionParameter, ParameterDeclarer parameter) {
+    if (extensionParameter.isAnnotatedWith(NotNull.class)) {
+      if (extensionParameter.isRequired()) {
+        throw new IllegalParameterModelDefinitionException(format("Parameter '%s' is required but annotated with '@%s', which is redundant",
+                                                                  extensionParameter.getName(), NotNull.class.getSimpleName()));
+      }
+
+      parameter.getDeclaration().getType().accept(new BasicTypeMetadataVisitor() {
+
+        @Override
+        protected void visitBasicType(MetadataType metadataType) {
+          throw new IllegalParameterModelDefinitionException(format("Parameter '%s' is annotated with '@%s' but is of type '%s'. That annotation can only be "
+                                                                        + "used with complex types (Pojos, Lists, Maps)",
+                                                                    extensionParameter.getName(), NotNull.class.getSimpleName(),
+                                                                    extensionParameter.getType().getName()));
+        }
+      });
+
+      parameter.withModelProperty(new NotNullModelProperty());
     }
   }
 
@@ -688,8 +715,8 @@ public final class AnnotationsBasedDescriber implements Describer {
         if (expressionResolverType.isPresent()) {
           metadataType = expressionResolverType.get();
         } else {
-          throw new IllegalParameterModelDefinitionException(String
-              .format(
+          throw new IllegalParameterModelDefinitionException(
+              format(
                       "The parameter [%s] from the Operation [%s] doesn't specify the %s parameterized type",
                       parameter.getName(),
                       declarationContext.getName(),

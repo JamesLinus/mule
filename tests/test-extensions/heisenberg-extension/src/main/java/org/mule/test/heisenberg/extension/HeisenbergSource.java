@@ -11,7 +11,7 @@ import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import org.mule.runtime.api.message.Attributes;
 import org.mule.runtime.extension.api.annotation.Alias;
-import org.mule.runtime.extension.api.annotation.Parameter;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;

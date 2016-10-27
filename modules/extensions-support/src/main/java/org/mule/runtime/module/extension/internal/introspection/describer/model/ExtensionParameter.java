@@ -7,13 +7,14 @@
 package org.mule.runtime.module.extension.internal.introspection.describer.model;
 
 
+import org.mule.runtime.api.message.Error;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.meta.NamedObject;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.message.InternalMessage;
-import org.mule.runtime.extension.api.annotation.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
@@ -35,6 +36,7 @@ public interface ExtensionParameter extends WithType, WithAnnotations, NamedObje
       .add(Event.class)
       .add(Message.class)
       .add(InternalMessage.class)
+      .add(Error.class)
       .add(SourceCallbackContext.class)
       .build();
 

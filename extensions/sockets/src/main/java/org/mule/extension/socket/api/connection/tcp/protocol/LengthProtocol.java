@@ -9,7 +9,7 @@ package org.mule.extension.socket.api.connection.tcp.protocol;
 import static java.lang.String.format;
 import org.mule.extension.socket.api.exceptions.LengthExceededException;
 import org.mule.extension.socket.api.socket.tcp.TcpProtocol;
-import org.mule.runtime.extension.api.annotation.Parameter;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 

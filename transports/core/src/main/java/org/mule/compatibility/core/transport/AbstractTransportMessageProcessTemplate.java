@@ -41,8 +41,7 @@ public abstract class AbstractTransportMessageProcessTemplate<MessageReceiverTyp
     this.messageReceiver = messageReceiver;
   }
 
-  @Override
-  public Event getMuleEvent() throws MuleException {
+  public Event getEvent() throws MuleException {
     if (muleEvent == null) {
       CompatibilityMessage messageFromSource = createMessageFromSource(getOriginalMessage());
       muleEvent = createEventFromMuleMessage(messageFromSource);

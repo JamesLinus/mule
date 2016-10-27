@@ -7,8 +7,8 @@
 package org.mule.test.metadata.extension;
 
 import static org.mule.test.metadata.extension.MetadataConnection.CAR;
-import org.mule.runtime.extension.api.annotation.ParameterGroup;
-import org.mule.runtime.extension.api.annotation.Query;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.Query;
 import org.mule.runtime.extension.api.annotation.metadata.Content;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;

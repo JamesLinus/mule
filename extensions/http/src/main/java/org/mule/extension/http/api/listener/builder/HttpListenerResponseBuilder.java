@@ -8,8 +8,7 @@ package org.mule.extension.http.api.listener.builder;
 
 import org.mule.extension.http.api.HttpMessageBuilder;
 import org.mule.runtime.api.metadata.MediaType;
-import org.mule.runtime.extension.api.annotation.Parameter;
-import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 
 import java.util.HashMap;
@@ -35,11 +34,6 @@ public abstract class HttpListenerResponseBuilder extends HttpMessageBuilder {
   @Parameter
   @Optional
   private String reasonPhrase;
-
-  @Parameter
-  @Optional(defaultValue = "#[payload]")
-  @XmlHints(allowReferences = false)
-  private Object body;
 
   /**
    * HTTP headers the response should have, as an expression. Will override the headers attribute.

@@ -7,9 +7,11 @@
 package org.mule.runtime.module.extension.internal.config.dsl;
 
 import static java.lang.String.format;
+import static org.mule.metadata.internal.utils.MetadataTypeUtils.getDefaultValue;
 import static org.mule.metadata.java.api.utils.JavaTypeUtils.getGenericTypeAt;
 import static org.mule.metadata.java.api.utils.JavaTypeUtils.getType;
-import static org.mule.metadata.internal.utils.MetadataTypeUtils.getDefaultValue;
+import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
+import static org.mule.runtime.api.meta.ExpressionSupport.REQUIRED;
 import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildCollectionConfiguration;
 import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildConfiguration;
 import static org.mule.runtime.config.spring.dsl.api.AttributeDefinition.Builder.fromChildMapConfiguration;
@@ -21,8 +23,6 @@ import static org.mule.runtime.config.spring.dsl.api.TypeDefinition.fromMapEntry
 import static org.mule.runtime.config.spring.dsl.api.TypeDefinition.fromType;
 import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.extension.api.introspection.declaration.type.TypeUtils.getExpressionSupport;
-import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
-import static org.mule.runtime.api.meta.ExpressionSupport.REQUIRED;
 import static org.mule.runtime.extension.api.util.NameUtils.hyphenize;
 import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getMemberName;
 import org.mule.metadata.api.ClassTypeLoader;
@@ -36,6 +36,10 @@ import org.mule.metadata.api.model.StringType;
 import org.mule.metadata.api.visitor.MetadataTypeVisitor;
 import org.mule.metadata.java.api.annotation.ClassInformationAnnotation;
 import org.mule.runtime.api.config.PoolingProfile;
+import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.api.meta.model.ExtensionModel;
+import org.mule.runtime.api.meta.model.ModelProperty;
+import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.config.spring.dsl.api.AttributeDefinition;
 import org.mule.runtime.config.spring.dsl.api.ComponentBuildingDefinition;
@@ -53,11 +57,7 @@ import org.mule.runtime.core.api.retry.RetryPolicyTemplate;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.TemplateParser;
 import org.mule.runtime.core.util.ValueHolder;
-import org.mule.runtime.api.meta.model.ExtensionModel;
-import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.extension.api.introspection.declaration.type.ExtensionsTypeLoaderFactory;
-import org.mule.runtime.api.meta.ExpressionSupport;
-import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.extension.xml.dsl.api.DslElementSyntax;
 import org.mule.runtime.extension.xml.dsl.api.resolver.DslSyntaxResolver;
 import org.mule.runtime.module.extension.internal.config.dsl.object.CharsetValueResolverParsingDelegate;
@@ -72,12 +72,14 @@ import org.mule.runtime.module.extension.internal.config.dsl.parameter.ObjectTyp
 import org.mule.runtime.module.extension.internal.config.dsl.parameter.TopLevelParameterObjectFactory;
 import org.mule.runtime.module.extension.internal.introspection.BasicTypeMetadataVisitor;
 import org.mule.runtime.module.extension.internal.introspection.describer.ParameterResolverTypeModelProperty;
+import org.mule.runtime.module.extension.internal.model.property.NotNullModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.QueryParameterModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ExpressionBasedParameterResolverValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ExpressionFunctionValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.NativeQueryParameterValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.NestedProcessorListValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.NestedProcessorValueResolver;
+import org.mule.runtime.module.extension.internal.runtime.resolver.NullSafeValueResolverWrapper;
 import org.mule.runtime.module.extension.internal.runtime.resolver.StaticValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.TypeSafeExpressionValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
@@ -517,7 +519,6 @@ public abstract class ExtensionDefinitionParser {
 
         @Override
         public void visitObject(ObjectType objectType) {
-
           ValueResolver valueResolver;
           Optional<? extends ParsingDelegate> delegate = locateParsingDelegate(valueResolverParsingDelegates, objectType);
           Optional<DslElementSyntax> typeDsl = dslResolver.resolve(objectType);
@@ -552,6 +553,11 @@ public abstract class ExtensionDefinitionParser {
       resolver = new StaticValueResolver<>(defaultValue);
     }
 
+    if (isNullSafe(modelProperties)) {
+      resolver = NullSafeValueResolverWrapper.of(expectedType, resolver, muleContext);
+
+    }
+
     if (resolver.isDynamic() && expressionSupport == NOT_SUPPORTED) {
       throw new IllegalArgumentException(
                                          format("An expression value was given for parameter '%s' but it doesn't support expressions",
@@ -568,6 +574,10 @@ public abstract class ExtensionDefinitionParser {
 
   private boolean isExpression(Object value, TemplateParser parser) {
     return value instanceof String && parser.isContainsTemplate((String) value);
+  }
+
+  private boolean isNullSafe(Set<ModelProperty> modelProperties) {
+    return modelProperties.stream().anyMatch(p -> p instanceof NotNullModelProperty);
   }
 
   /**
@@ -647,7 +657,7 @@ public abstract class ExtensionDefinitionParser {
       try {
         new ObjectTypeParameterParser(baseDefinitionBuilder.copy(), elementName, elementNamespace, type, getContextClassLoader(),
                                       dslResolver, parsingContext, muleContext).parse()
-                                          .forEach(definition -> addDefinition(definition));
+                                          .forEach(this::addDefinition);
       } catch (Exception e) {
         throw new MuleRuntimeException(new ConfigurationException(e));
       }

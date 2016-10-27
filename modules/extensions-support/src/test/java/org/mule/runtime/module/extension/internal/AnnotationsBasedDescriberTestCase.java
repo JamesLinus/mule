@@ -60,8 +60,8 @@ import org.mule.runtime.extension.api.annotation.Configuration;
 import org.mule.runtime.extension.api.annotation.Configurations;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.Operations;
-import org.mule.runtime.extension.api.annotation.Parameter;
-import org.mule.runtime.extension.api.annotation.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProviders;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.UseConfig;
@@ -400,7 +400,10 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
     assertParameter(parameters, "deathsBySeasons", "",
                     TYPE_BUILDER.dictionaryType().id(Map.class.getName())
                         .ofKey(TYPE_BUILDER.stringType().id(String.class.getName())).ofValue(TYPE_BUILDER.arrayType()
-                            .id(List.class.getName()).of(TYPE_BUILDER.stringType().id(String.class.getName())))
+                            .id(List.class.getName())
+                            .of(TYPE_BUILDER.stringType()
+                                .id(String.class
+                                    .getName())))
                         .build(),
                     false, SUPPORTED, null);
     assertParameter(parameters, "weaponValueMap", "",
@@ -574,7 +577,9 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
     operation = getOperation(extensionDeclaration, PROCESS_INFO);
     assertThat(operation, is(notNullValue()));
-    assertParameter(operation.getParameters(), "sales", "", TYPE_LOADER.load(new TypeToken<Map<String, SaleInfo>>() {}.getType()),
+    assertParameter(operation.getParameters(), "sales", "", TYPE_LOADER.load(new TypeToken<Map<String, SaleInfo>>() {
+
+    }.getType()),
                     true, SUPPORTED, null);
 
     operation = getOperation(extensionDeclaration, PROCESS_WEAPON);
@@ -613,7 +618,7 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
     assertThat(parameters, hasSize(3));
 
     assertParameter(parameters, SOURCE_PARAMETER, "", toMetadataType(int.class), true, NOT_SUPPORTED, null);
-    assertParameter(parameters, SOURCE_CALLBACK_PARAMETER, "", toMetadataType(Long.class), true, SUPPORTED, null);
+    assertParameter(parameters, SOURCE_CALLBACK_PARAMETER, "", toMetadataType(Long.class), false, SUPPORTED, "#[payload]");
     ImplementingTypeModelProperty typeModelProperty = source.getModelProperty(ImplementingTypeModelProperty.class).get();
     assertThat(typeModelProperty.getType(), equalTo(HeisenbergSource.class));
   }
@@ -661,11 +666,13 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   @Configurations({HeisenbergExtension.class, NamedHeisenbergAlternateConfig.class})
   public static class HeisenbergPointerPlusExternalConfig {
 
   }
+
 
   @Configuration(name = EXTENDED_CONFIG_NAME, description = EXTENDED_CONFIG_DESCRIPTION)
   @Operations({HeisenbergOperations.class, MoneyLaunderingOperation.class})
@@ -673,11 +680,13 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   @Operations({DuplicateConfigOperation.class})
   public static class HeisenbergWithInvalidOperation extends HeisenbergExtension {
 
   }
+
 
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   public static class HeisenbergWithParameterGroupAsOptional extends HeisenbergExtension {
@@ -688,6 +697,7 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   public static class HeisenbergWithRecursiveParameterGroup extends HeisenbergExtension {
 
@@ -696,6 +706,7 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   @Operations(HeisenbergAlternateConfig.class)
   @Configurations(HeisenbergAlternateConfig.class)
@@ -703,11 +714,13 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   @Configurations(HeisenbergIsolatedConfig.class)
   public static class HeisenbergWithOperationsPointingToExtension extends HeisenbergExtension {
 
   }
+
 
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   @Operations(HeisenbergExtension.class)
@@ -715,11 +728,13 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   @Extension(name = OTHER_HEISENBERG, description = EXTENSION_DESCRIPTION)
   @Operations({HeisenbergExtension.class, GenericlessMessageOperation.class})
   public static class HeisenbergWithGenericlessMessageOperation {
 
   }
+
 
   public static class DuplicateConfigOperation {
 
@@ -729,12 +744,14 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   public static class GenericlessMessageOperation {
 
     public Result noGenerics() {
       return null;
     }
   }
+
 
   public static class HeisenbergAlternateConfig extends HeisenbergExtension {
 
@@ -751,6 +768,7 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
 
   }
 
+
   @Operations(HeisenbergExtension.class)
   public static class HeisenbergIsolatedConfig {
 
@@ -765,6 +783,7 @@ public class AnnotationsBasedDescriberTestCase extends AbstractAnnotationsBasedD
       this.extendedProperty = extendedProperty;
     }
   }
+
 
   private static class RecursiveParameterGroup {
 

@@ -11,11 +11,11 @@ import static org.mule.runtime.module.extension.internal.util.MuleExtensionUtils
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.MuleRuntimeException;
-import org.mule.runtime.extension.api.annotation.Parameter;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.api.meta.model.source.SourceModel;
 import org.mule.runtime.extension.api.runtime.source.Source;
 import org.mule.runtime.module.extension.internal.introspection.ParameterGroup;
-import org.mule.runtime.module.extension.internal.runtime.ParameterGroupAwareObjectBuilder;
+import org.mule.runtime.module.extension.internal.runtime.objectbuilder.ResolverSetBasedObjectBuilder;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
 
 /**
@@ -51,8 +51,8 @@ public final class SourceConfigurer {
    * @throws MuleException
    */
   public Source configure(Source source) throws MuleException {
-    ParameterGroupAwareObjectBuilder<Source> builder =
-        new ParameterGroupAwareObjectBuilder<Source>(source.getClass(), model, resolverSet) {
+    ResolverSetBasedObjectBuilder<Source> builder =
+        new ResolverSetBasedObjectBuilder<Source>(source.getClass(), model, resolverSet) {
 
           @Override
           protected Source instantiateObject() {

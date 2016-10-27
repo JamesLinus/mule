@@ -19,7 +19,6 @@ import static org.mule.runtime.api.meta.ExpressionSupport.SUPPORTED;
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import static org.reflections.ReflectionUtils.getAllFields;
 import static org.reflections.ReflectionUtils.getAllSuperTypes;
-import static org.reflections.ReflectionUtils.withAnnotation;
 import static org.reflections.ReflectionUtils.withName;
 import static org.springframework.core.ResolvableType.forType;
 import org.mule.metadata.api.ClassTypeLoader;
@@ -48,9 +47,9 @@ import org.mule.runtime.core.util.collection.ImmutableListCollector;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Ignore;
-import org.mule.runtime.extension.api.annotation.Parameter;
-import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
 import org.mule.runtime.extension.api.introspection.streaming.PagingProvider;
 import org.mule.runtime.extension.api.runtime.operation.InterceptingCallback;
@@ -70,6 +69,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -261,12 +261,6 @@ public final class IntrospectionUtils {
     return CollectionUtils.isEmpty(candidates) ? Optional.empty() : Optional.of(candidates.iterator().next());
   }
 
-  public static Optional<Field> getFieldByAlias(Class<?> clazz, String alias) {
-    Collection<Field> candidates = getAllFields(clazz, withAnnotation(Alias.class));
-    Optional<Field> field = candidates.stream().filter(f -> alias.equals(f.getAnnotation(Alias.class).value())).findFirst();
-    return field.isPresent() ? field : getField(clazz, alias);
-  }
-
   public static String getMemberName(EnrichableModel enrichableModel, String defaultName) {
     return enrichableModel.getModelProperty(DeclaringMemberModelProperty.class).map(p -> p.getDeclaringField().getName())
         .orElse(defaultName);
@@ -411,6 +405,11 @@ public final class IntrospectionUtils {
   public static List<Field> getFields(Class<?> clazz) {
     return getDescendingHierarchy(clazz).stream().flatMap(type -> stream(type.getDeclaredFields()))
         .collect(new ImmutableListCollector<>());
+  }
+
+  public static <T extends AnnotatedElement & Member> String getAlias(T element) {
+    Alias alias = element.getAnnotation(Alias.class);
+    return alias != null ? alias.value() : element.getName();
   }
 
   private static List<Class<?>> getDescendingHierarchy(Class<?> type) {

@@ -11,7 +11,7 @@ import org.mule.extension.db.internal.domain.type.DbType;
 import org.mule.extension.db.internal.domain.type.DynamicDbType;
 import org.mule.runtime.extension.api.annotation.param.ExclusiveOptionals;
 import org.mule.runtime.extension.api.annotation.Expression;
-import org.mule.runtime.extension.api.annotation.Parameter;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 
 /**

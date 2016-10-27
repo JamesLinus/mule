@@ -4,13 +4,15 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.extension.internal.runtime;
+package org.mule.runtime.module.extension.internal.runtime.objectbuilder;
 
+import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getField;
 import org.mule.runtime.api.meta.model.EnrichableModel;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.util.collection.ImmutableListCollector;
 import org.mule.runtime.module.extension.internal.model.property.ParameterGroupModelProperty;
+import org.mule.runtime.module.extension.internal.runtime.BaseObjectBuilder;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSetResult;
 import org.mule.runtime.module.extension.internal.util.GroupValueSetter;
@@ -20,8 +22,6 @@ import org.mule.runtime.module.extension.internal.util.ValueSetter;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getField;
-
 /**
  * A specialization of {@link BaseObjectBuilder} which generates object based on an {@link EnrichableModel} for with parameter
  * groups have been defined based on a {@link ParameterGroupModelProperty}
@@ -29,16 +29,21 @@ import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils
  * @param <T> the generic type of the instances to be produced
  * @since 4.0
  */
-public abstract class ParameterGroupAwareObjectBuilder<T> extends BaseObjectBuilder<T> {
+public abstract class ResolverSetBasedObjectBuilder<T> extends BaseObjectBuilder<T> {
 
   protected final ResolverSet resolverSet;
   private final List<ValueSetter> singleValueSetters;
   private final List<ValueSetter> groupValueSetters;
 
-  public ParameterGroupAwareObjectBuilder(Class<?> prototypeClass, EnrichableModel model, ResolverSet resolverSet) {
+  public ResolverSetBasedObjectBuilder(Class<?> prototypeClass, EnrichableModel model, ResolverSet resolverSet) {
+    this(prototypeClass, model.getModelProperty(ParameterGroupModelProperty.class), resolverSet);
+  }
+
+  public ResolverSetBasedObjectBuilder(Class<?> prototypeClass, Optional<ParameterGroupModelProperty> groupModelProperty,
+                                       ResolverSet resolverSet) {
     this.resolverSet = resolverSet;
     singleValueSetters = createSingleValueSetters(prototypeClass, resolverSet);
-    groupValueSetters = GroupValueSetter.settersFor(model);
+    groupValueSetters = GroupValueSetter.settersFor(groupModelProperty);
   }
 
   @Override
