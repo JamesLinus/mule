@@ -10,7 +10,7 @@ package org.mule.runtime.module.artifact.serializer;
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import org.mule.runtime.core.api.serialization.SerializationException;
 import org.mule.runtime.core.serialization.internal.AbstractSerializationProtocol;
-import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderRepository;
+import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,17 +25,17 @@ import java.io.Serializable;
  */
 public class CustomJavaSerializationProtocol extends AbstractSerializationProtocol {
 
-  private final ArtifactClassLoaderRepository artifactClassLoaderRepository;
+  private final ClassLoaderRepository classLoaderRepository;
 
   /**
    * Creates a new serialization protocol to serialize/deserialize classes provided by any class loader
    * defined in the provided class loader repository.
+   *  @param classLoaderRepository contains the registered classloaders that can be used to load serialized classes. Non null.
    *
-   * @param artifactClassLoaderRepository contains the registered classloaders that can be used to load serialized classes. Non null.
    */
-  public CustomJavaSerializationProtocol(ArtifactClassLoaderRepository artifactClassLoaderRepository) {
-    checkArgument(artifactClassLoaderRepository != null, "artifactClassLoaderRepository cannot be null");
-    this.artifactClassLoaderRepository = artifactClassLoaderRepository;
+  public CustomJavaSerializationProtocol(ClassLoaderRepository classLoaderRepository) {
+    checkArgument(classLoaderRepository != null, "artifactClassLoaderRepository cannot be null");
+    this.classLoaderRepository = classLoaderRepository;
   }
 
   /**
@@ -47,7 +47,7 @@ public class CustomJavaSerializationProtocol extends AbstractSerializationProtoc
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream(512);
 
-    try (ObjectOutputStream out = new ArtifactClassLoaderObjectOutputStream(outputStream)) {
+    try (ObjectOutputStream out = new ArtifactClassLoaderObjectOutputStream(classLoaderRepository, outputStream)) {
       out.writeObject(object);
     } catch (IOException ex) {
       throw new SerializationException("Cannot serialize object", ex);
@@ -63,7 +63,7 @@ public class CustomJavaSerializationProtocol extends AbstractSerializationProtoc
     checkArgument(inputStream != null, "Cannot deserialize a null stream");
     checkArgument(classLoader != null, "Cannot deserialize with a null classloader");
 
-    try (ObjectInputStream in = new ArtifactClassLoaderObjectInputStream(artifactClassLoaderRepository, inputStream)) {
+    try (ObjectInputStream in = new ArtifactClassLoaderObjectInputStream(classLoaderRepository, inputStream)) {
       Object obj = in.readObject();
 
       return (T) obj;

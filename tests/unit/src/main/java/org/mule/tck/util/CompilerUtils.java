@@ -128,8 +128,7 @@ public class CompilerUtils {
     /**
      * @return the folder where compiled classes where written or null if {@link #compile(File)} was not execute yet.
      */
-    public File getTargetFolder()
-    {
+    public File getTargetFolder() {
       return targetFolder;
     }
 

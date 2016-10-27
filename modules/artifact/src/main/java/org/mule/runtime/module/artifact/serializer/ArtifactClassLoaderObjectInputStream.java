@@ -8,8 +8,7 @@
 package org.mule.runtime.module.artifact.serializer;
 
 import static java.lang.Class.forName;
-import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
-import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderRepository;
+import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,19 +23,19 @@ import java.io.ObjectStreamClass;
  */
 public class ArtifactClassLoaderObjectInputStream extends ObjectInputStream {
 
-  private final ArtifactClassLoaderRepository artifactClassLoaderRepository;
+  private final ClassLoaderRepository classLoaderRepository;
 
   /**
    * Creates a new stream instance.
    *
-   * @param artifactClassLoaderRepository contains the registered classloaders that can be used to load serialized classes. Non null.
+   * @param classLoaderRepository contains the registered classloaders that can be used to load serialized classes. Non null.
    * @param input input stream to read from. Non null.
    * @throws  IOException if an I/O error occurs while reading stream header
    */
-  public ArtifactClassLoaderObjectInputStream(ArtifactClassLoaderRepository artifactClassLoaderRepository, InputStream input)
+  public ArtifactClassLoaderObjectInputStream(ClassLoaderRepository classLoaderRepository, InputStream input)
       throws IOException {
     super(input);
-    this.artifactClassLoaderRepository = artifactClassLoaderRepository;
+    this.classLoaderRepository = classLoaderRepository;
   }
 
   @Override
@@ -52,12 +51,12 @@ public class ArtifactClassLoaderObjectInputStream extends ObjectInputStream {
     }
 
     String classLoaderId = new String(bytes);
-    final ArtifactClassLoader classLoader = artifactClassLoaderRepository.find(classLoaderId);
+    final ClassLoader classLoader = classLoaderRepository.find(classLoaderId);
     if (classLoader == null) {
       throw new IOException("Artifact class loader not found: " + classLoaderId);
     }
 
-    return forName(desc.getName(), false, classLoader.getClassLoader());
+    return forName(desc.getName(), false, classLoader);
   }
 
   //TODO(pablo.kraan): serialization - need to implement resolveProxyClass?

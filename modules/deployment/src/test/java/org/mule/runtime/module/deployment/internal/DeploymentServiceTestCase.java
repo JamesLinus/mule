@@ -145,7 +145,7 @@ public class DeploymentServiceTestCase extends AbstractMuleTestCase {
   private static final String BAD_APP_CONFIG_XML = "/bad-app-config.xml";
   private static final String BROKEN_CONFIG_XML = "/broken-config.xml";
   private static final String EMPTY_DOMAIN_CONFIG_XML = "/empty-domain-config.xml";
-  private DefaultArtifactClassLoaderManager artifactClassLoaderManager;
+  private DefaultClassLoaderManager artifactClassLoaderManager;
 
   @Parameterized.Parameters(name = "Parallel: {0}")
   public static List<Object[]> parameters() {

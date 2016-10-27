@@ -58,14 +58,14 @@ public class MuleArtifactResourcesRegistry {
   private final ArtifactClassLoader containerClassLoader;
   private final MuleServiceManager serviceManager;
   private final ArtifactClassLoaderFactory<ArtifactPluginDescriptor> artifactPluginClassLoaderFactory;
-  private final DefaultArtifactClassLoaderManager artifactClassLoaderManager;
+  private final DefaultClassLoaderManager artifactClassLoaderManager;
 
   /**
    * Creates a repository for resources required for mule artifacts.
    */
   public MuleArtifactResourcesRegistry() {
     containerClassLoader = new ContainerClassLoaderFactory().createContainerClassLoader(getClass().getClassLoader());
-    artifactClassLoaderManager = new DefaultArtifactClassLoaderManager();
+    artifactClassLoaderManager = new DefaultClassLoaderManager();
 
     domainManager = new DefaultDomainManager();
     this.domainClassLoaderFactory = trackDeployableArtifactClassLoaderFactory(
@@ -92,7 +92,8 @@ public class MuleArtifactResourcesRegistry {
                                                             new ReflectionServiceResolver(new ReflectionServiceProviderResolutionHelper())));
 
     applicationFactory = new DefaultApplicationFactory(applicationClassLoaderBuilderFactory, applicationDescriptorFactory,
-                                                       artifactPluginRepository, domainManager, serviceManager);
+                                                       artifactPluginRepository, domainManager, serviceManager,
+                                                       artifactClassLoaderManager);
     temporaryApplicationFactory = new TemporaryApplicationFactory(applicationClassLoaderBuilderFactory,
                                                                   new TemporaryApplicationDescriptorFactory(artifactPluginDescriptorLoader,
                                                                                                             artifactPluginRepository),
@@ -185,7 +186,7 @@ public class MuleArtifactResourcesRegistry {
   /**
    * @return the artifact classLoader manager
    */
-  public DefaultArtifactClassLoaderManager getArtifactClassLoaderManager() {
+  public DefaultClassLoaderManager getArtifactClassLoaderManager() {
     return artifactClassLoaderManager;
   }
 }

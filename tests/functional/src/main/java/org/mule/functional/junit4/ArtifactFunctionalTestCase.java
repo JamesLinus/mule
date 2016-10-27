@@ -10,11 +10,13 @@ package org.mule.functional.junit4;
 import static org.hamcrest.object.IsCompatibleType.typeCompatibleWith;
 import static org.junit.Assert.assertThat;
 import static org.mule.test.runner.utils.AnnotationUtils.getAnnotationAttributeFrom;
-
 import org.mule.runtime.config.spring.SpringXmlConfigurationBuilder;
 import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
+import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
+import org.mule.runtime.module.artifact.serializer.ArtifactObjectSerializer;
 import org.mule.runtime.module.service.DefaultServiceDiscoverer;
 import org.mule.runtime.module.service.MuleServiceManager;
 import org.mule.runtime.module.service.ReflectionServiceProviderResolutionHelper;
@@ -28,8 +30,12 @@ import org.mule.test.runner.api.ClassPathClassifier;
 import org.mule.test.runner.api.IsolatedClassLoaderExtensionsManagerConfigurationBuilder;
 import org.mule.test.runner.api.IsolatedServiceProviderDiscoverer;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 /**
@@ -71,6 +77,95 @@ public abstract class ArtifactFunctionalTestCase extends FunctionalTestCase {
   private static ClassLoader containerClassLoader;
 
   private static MuleServiceManager serviceRepository;
+  private static ClassLoaderRepository classLoaderRepository;
+
+  @BeforeClass
+  public static void configureClassLoaderRepository()
+  {
+    classLoaderRepository = new TestClassLoaderRepository();
+  }
+
+  @Override
+  protected ObjectSerializer getObjectSerializer()
+  {
+    return new ArtifactObjectSerializer(classLoaderRepository);
+  }
+
+  private static class TestClassLoaderRepository implements ClassLoaderRepository
+  {
+
+    private Map<String, ClassLoader> classLoaders = new HashMap<>();
+
+    public TestClassLoaderRepository()
+    {
+      registerClassLoader(Thread.currentThread().getContextClassLoader());
+      registerClassLoader(containerClassLoader);
+      for (Object classLoader : serviceClassLoaders)
+      {
+        registerClassLoader(classLoader);
+      }
+      for (Object classLoader : pluginClassLoaders)
+      {
+        registerClassLoader(classLoader);
+      }
+    }
+
+    private void registerClassLoader(Object classLoader)
+    {
+      if (isArtifactClassLoader(classLoader))
+      {
+        try
+        {
+          Method getArtifactIdMethod = classLoader.getClass().getMethod("getArtifactId");
+          String artifactId = (String) getArtifactIdMethod.invoke(classLoader);
+          classLoaders.put(artifactId, (ClassLoader) classLoader);
+        }
+        catch (Exception e)
+        {
+          throw new RuntimeException(e);
+        }
+      }
+
+    }
+
+    private boolean isArtifactClassLoader(Object classLoader)
+    {
+      Class clazz = classLoader.getClass();
+      while (clazz.getSuperclass() != null)
+      {
+        for (Class interfaceClass : clazz.getInterfaces())
+        {
+          if (interfaceClass.getName().equals(ArtifactClassLoader.class.getName()))
+          {
+            return true;
+          }
+        }
+        clazz = clazz.getSuperclass();
+      }
+
+      return false;
+    }
+
+    @Override
+    public ClassLoader find(String classLoaderId)
+    {
+      return classLoaders.get(classLoaderId);
+    }
+
+    @Override
+    public String getId(ClassLoader classLoader)
+    {
+      for (String key : classLoaders.keySet())
+      {
+        if (classLoaders.get(key) == classLoader)
+        {
+          return key;
+        }
+      }
+
+      return null;
+    }
+  }
 
   /**
    * @return thread context class loader has to be the application {@link ClassLoader} created by the runner.

@@ -22,7 +22,7 @@ public class DefaultArtifactClassLoaderManagerTestCase extends AbstractMuleTestC
 
   public static final String ARTIFACT_ID = "ID";
 
-  private final DefaultArtifactClassLoaderManager manager = new DefaultArtifactClassLoaderManager();
+  private final DefaultClassLoaderManager manager = new DefaultClassLoaderManager();
 
   @Test
   public void registersArtifactClassLoader() throws Exception {

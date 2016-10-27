@@ -17,7 +17,7 @@ import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.serialization.SerializationException;
 import org.mule.runtime.core.serialization.AbstractSerializerProtocolContractTestCase;
-import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderRepository;
+import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderLookupPolicy;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderLookupStrategy;
 import org.mule.runtime.module.artifact.classloader.MuleArtifactClassLoader;
@@ -33,8 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class CustomJavaSerializationProtocolTestCase extends AbstractSerializerProtocolContractTestCase
-{
+public class CustomJavaSerializationProtocolTestCase extends AbstractSerializerProtocolContractTestCase {
 
   public static final String INSTANCE_NAME = "serializedInstance";
   public static final String SERIALIZABLE_CLASS = "org.foo.SerializableClass";
@@ -44,12 +43,12 @@ public class CustomJavaSerializationProtocolTestCase extends AbstractSerializerP
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private ArtifactClassLoaderRepository artifactClassLoaderRepository;
+  private ClassLoaderRepository classLoaderRepository;
 
   @Override
   protected void doSetUp() throws Exception {
-    artifactClassLoaderRepository = mock(ArtifactClassLoaderRepository.class);
-    serializerProtocol = new CustomJavaSerializationProtocol(artifactClassLoaderRepository);
+    classLoaderRepository = mock(ClassLoaderRepository.class);
+    serializerProtocol = new CustomJavaSerializationProtocol(classLoaderRepository);
 
     initialiseIfNeeded(serializerProtocol, muleContext);
   }
@@ -74,8 +73,9 @@ public class CustomJavaSerializationProtocolTestCase extends AbstractSerializerP
     final ClassLoaderLookupPolicy lookupPolicy = mock(ClassLoaderLookupPolicy.class);
     when(lookupPolicy.getLookupStrategy(any())).thenReturn(ClassLoaderLookupStrategy.PARENT_FIRST);
     final MuleArtifactClassLoader artifactClassLoader =
-        new MuleArtifactClassLoader(ARTIFACT_ID, new ArtifactDescriptor(ARTIFACT_NAME), urls, getClass().getClassLoader(), lookupPolicy);
-    when(artifactClassLoaderRepository.find(ARTIFACT_ID)).thenReturn(artifactClassLoader);
+        new MuleArtifactClassLoader(ARTIFACT_ID, new ArtifactDescriptor(ARTIFACT_NAME), urls, getClass().getClassLoader(),
+                                    lookupPolicy);
+    when(classLoaderRepository.find(ARTIFACT_ID)).thenReturn(artifactClassLoader);
 
     final Class<?> echoTestClass = artifactClassLoader.loadClass(SERIALIZABLE_CLASS);
     final Object payload = echoTestClass.newInstance();

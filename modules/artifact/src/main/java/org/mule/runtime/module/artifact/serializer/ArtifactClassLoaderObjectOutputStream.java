@@ -7,7 +7,7 @@
 
 package org.mule.runtime.module.artifact.serializer;
 
-import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
+import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -22,20 +22,24 @@ import java.io.OutputStream;
 
 public class ArtifactClassLoaderObjectOutputStream extends ObjectOutputStream {
 
+  private final ClassLoaderRepository classLoaderRepository;
+
   /**
    * Creates a new output stream.
    *
+   * @param classLoaderRepository
    * @param out output stream to write to
    * @throws IOException if an I/O error occurs while writing stream header
    */
-  public ArtifactClassLoaderObjectOutputStream(OutputStream out) throws IOException {
+  public ArtifactClassLoaderObjectOutputStream(ClassLoaderRepository classLoaderRepository, OutputStream out) throws IOException {
     super(out);
+    this.classLoaderRepository = classLoaderRepository;
   }
 
   @Override
   protected void annotateClass(Class<?> clazz) throws IOException {
-    if (clazz.getClassLoader() instanceof ArtifactClassLoader) {
-      String id = ((ArtifactClassLoader) clazz.getClassLoader()).getArtifactId();
+    String id = classLoaderRepository.getId(clazz.getClassLoader());
+    if (id != null) {
       this.writeByte(id.length());
       this.writeBytes(id);
     } else {

@@ -46,8 +46,9 @@ public class DefaultMuleApplicationStatusTestCase extends AbstractMuleContextTes
     MuleApplicationClassLoader parentArtifactClassLoader = mock(MuleApplicationClassLoader.class);
     ArtifactContext mockArtifactContext = mock(ArtifactContext.class);
     when(mockArtifactContext.getMuleContext()).thenReturn(muleContext);
+    //TODO(pablo.kraan): serialization - add objectSerializer
     application = new DefaultMuleApplication(null, parentArtifactClassLoader, emptyList(),
-                                             null, mock(ServiceRepository.class), appLocation);
+                                             null, mock(ServiceRepository.class), appLocation, null);
     application.setArtifactContext(mockArtifactContext);
   }
 
@@ -88,9 +89,10 @@ public class DefaultMuleApplicationStatusTestCase extends AbstractMuleContextTes
     ApplicationDescriptor descriptor = mock(ApplicationDescriptor.class);
     when(descriptor.getAbsoluteResourcePaths()).thenReturn(new String[] {});
 
+    //TODO(pablo.kraan): serialization - add objectSerializer
     DefaultMuleApplication application =
         new DefaultMuleApplication(descriptor, mock(MuleApplicationClassLoader.class), emptyList(), null,
-                                   null, appLocation);
+                                   null, appLocation, null);
     application.install();
     assertThat(application.deploymentClassLoader, is(notNullValue()));
     application.dispose();
