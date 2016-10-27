@@ -19,6 +19,7 @@ import org.mule.runtime.core.config.builders.DefaultsConfigurationBuilder;
 import org.mule.runtime.core.construct.Flow;
 import org.mule.runtime.core.context.DefaultMuleContextFactory;
 import org.mule.runtime.core.security.MuleSecurityManager;
+import org.mule.tck.config.RegisterServicesConfigurationBuilder;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
@@ -41,6 +42,7 @@ public class QueueManagerLifecycleOrderTestCase extends AbstractMuleTestCase {
   @Before
   public void before() throws InitialisationException, ConfigurationException {
     muleContext = new DefaultMuleContextFactory().createMuleContext(new QueueManagerOnlyConfigurationBuilder());
+    new RegisterServicesConfigurationBuilder().configure(muleContext);
   }
 
   @After

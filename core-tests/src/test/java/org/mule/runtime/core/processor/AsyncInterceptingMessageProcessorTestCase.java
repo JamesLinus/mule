@@ -60,6 +60,7 @@ public class AsyncInterceptingMessageProcessorTestCase extends AbstractReactiveP
   protected void doSetUp() throws Exception {
     super.doSetUp();
     messageProcessor = createAsyncInterceptingMessageProcessor(target);
+    messageProcessor.start();
   }
 
   @Test

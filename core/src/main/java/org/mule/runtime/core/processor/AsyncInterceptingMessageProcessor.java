@@ -61,6 +61,7 @@ public class AsyncInterceptingMessageProcessor extends AbstractInterceptingMessa
 
   @Deprecated
   public AsyncInterceptingMessageProcessor(WorkManagerSource workManagerSource) {
+    requireNonNull(workManagerSource);
     this.workManagerSource = workManagerSource;
   }
 

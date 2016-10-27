@@ -199,6 +199,7 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
   @Override
   public void setProcessingStrategyFactory(ProcessingStrategyFactory processingStrategyFactory) {
     this.processingStrategyFactory = processingStrategyFactory;
+    this.processingStrategy = null;
   }
 
   @Override
@@ -263,7 +264,7 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
         && !(messageSource instanceof NonBlockingMessageSource)) {
       throw new FlowConstructInvalidException(CoreMessages
           .createStaticMessage(format("The non-blocking processing strategy (%s) currently only supports non-blocking messages sources (source is %s).",
-                                      getProcessingStrategy().toString(), messageSource.toString())), this);
+                                      getProcessingStrategyFactory().toString(), messageSource.toString())), this);
     }
 
     if (!userConfiguredProcessingStrategy && redeliveryHandlerConfigured) {
