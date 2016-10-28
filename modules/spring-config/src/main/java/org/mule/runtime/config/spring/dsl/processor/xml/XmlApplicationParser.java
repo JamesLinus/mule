@@ -68,7 +68,8 @@ public class XmlApplicationParser {
     }
     for (XmlNamespaceInfoProvider namespaceInfoProvider : namespaceInfoProviders) {
       Optional<XmlNamespaceInfo> matchingXmlNamespaceInfo = namespaceInfoProvider.getXmlNamespacesInfo().stream()
-          .filter(xmlNamespaceInfo -> namespaceUri.startsWith(xmlNamespaceInfo.getNamespaceUriPrefix())).findFirst();
+          //TODO WIP MULE-10252 if we do not change "startsWith" for "equals" breaks for some module names, it should be fixed once we unify the plugin behaviour
+          .filter(xmlNamespaceInfo -> namespaceUri.equals(xmlNamespaceInfo.getNamespaceUriPrefix())).findFirst();
       if (matchingXmlNamespaceInfo.isPresent()) {
         return matchingXmlNamespaceInfo.get().getNamespace();
       }

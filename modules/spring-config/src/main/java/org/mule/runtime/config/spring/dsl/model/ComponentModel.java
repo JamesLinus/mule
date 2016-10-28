@@ -12,6 +12,7 @@ import static org.mule.runtime.config.spring.dsl.model.ApplicationModel.NAME_ATT
 import org.mule.runtime.core.api.processor.MessageRouter;
 import org.mule.runtime.dsl.api.component.ComponentIdentifier;
 import org.mule.runtime.core.util.Preconditions;
+import org.mule.runtime.core.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,6 +102,20 @@ public class ComponentModel {
   }
 
   /**
+   * //TODO WIP MULE-10252 this should not be here for GA
+   */
+  public void setRoot(boolean root) {
+    this.root = root;
+  }
+
+  /**
+   * //TODO WIP MULE-10252 this should not be here for GA
+   */
+  public void setParameter(String parameterName, String value) {
+    this.parameters.put(parameterName, value);
+  }
+
+  /**
    * @return the {@code BeanDefinition} created based on the {@code ComponentModel} values.
    */
   public BeanDefinition getBeanDefinition() {
@@ -179,6 +194,13 @@ public class ComponentModel {
 
   public Map<String, Object> getAnnotations() {
     return unmodifiableMap(annotations);
+  }
+
+  /**
+   * //TODO WIP MULE-10252 this should not be here for GA
+   */
+  public void setIdentifier(ComponentIdentifier identifier) {
+    this.identifier = identifier;
   }
 
   /**
@@ -297,6 +319,27 @@ public class ComponentModel {
     result = 31 * result + parameters.hashCode();
     result = 31 * result + innerComponents.hashCode();
     return result;
+  }
+
+  //TODO WIP MULE-10252 useful for debugging, remove once completed.
+  public String toXml() {
+    return toXml(0);
+  }
+
+  //TODO WIP MULE-10252 see above.
+  private String toXml(int tab) {
+    String spaces = StringUtils.repeat(" ", tab * 3);
+    StringBuilder sb = new StringBuilder(spaces).append("<").append(getIdentifier().toString());
+    parameters.forEach((id, value) -> sb.append(" ").append(id).append("=\"").append(value).append("\""));
+    if (innerComponents.isEmpty()) {
+      sb.append("/>");
+    } else {
+      sb.append(">");
+      innerComponents
+          .forEach(componentModel -> sb.append(System.getProperty("line.separator")).append(componentModel.toXml(tab + 1)));
+      sb.append(System.getProperty("line.separator")).append(spaces).append("</").append(getIdentifier().toString()).append(">");
+    }
+    return sb.toString();
   }
 
 }

@@ -4,6 +4,8 @@
       xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 
     <flow name="flow">
+        <!-- //TODO WIP MULE-10252 talk to PLG, empty flows are XSD invalid so it needs at least one element or it fails-->
+        <echo-component/>
     </flow>
 
 </mule>

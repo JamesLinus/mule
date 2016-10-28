@@ -15,21 +15,23 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.mule.runtime.config.spring.dsl.processor.xml.XmlCustomAttributeHandler.from;
-import static org.mule.runtime.config.spring.dsl.processor.xml.XmlCustomAttributeHandler.to;
 import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.dsl.api.xml.DslConstants.CORE_NAMESPACE;
 import static org.mule.runtime.extension.api.util.NameUtils.hyphenize;
 import static org.mule.runtime.extension.api.util.NameUtils.pluralize;
-import org.mule.runtime.dsl.api.component.ComponentIdentifier;
-import org.mule.runtime.dsl.api.config.ArtifactConfiguration;
-import org.mule.runtime.dsl.api.config.ComponentConfiguration;
+import org.mule.runtime.config.spring.dsl.model.extension.ModuleExtension;
+import org.mule.runtime.config.spring.dsl.model.extension.OperationExtension;
+import org.mule.runtime.config.spring.dsl.model.extension.ParameterExtension;
+import org.mule.runtime.config.spring.dsl.model.extension.loader.ModuleExtensionStore;
+import org.mule.runtime.config.spring.dsl.model.extension.schema.ModuleSchemaGenerator;
 import org.mule.runtime.config.spring.dsl.processor.ArtifactConfig;
 import org.mule.runtime.config.spring.dsl.processor.ConfigFile;
-import org.mule.runtime.config.spring.dsl.processor.ConfigLine;
-import org.mule.runtime.config.spring.dsl.processor.SimpleConfigAttribute;
 import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.api.config.ConfigurationException;
 import org.mule.runtime.dsl.api.component.ComponentBuildingDefinition;
+import org.mule.runtime.dsl.api.component.ComponentIdentifier;
+import org.mule.runtime.dsl.api.config.ArtifactConfiguration;
+import org.mule.runtime.dsl.api.config.ComponentConfiguration;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -45,6 +47,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.springframework.util.PropertyPlaceholderHelper;
 import org.w3c.dom.Element;
@@ -239,6 +242,12 @@ public class ApplicationModel {
   private List<ComponentModel> springComponentModels = new LinkedList<>();
   private PropertyPlaceholderHelper propertyPlaceholderHelper = new PropertyPlaceholderHelper("${", "}");
   private Properties applicationProperties;
+  /**
+   * literal that represents the name of the global element for any given module. If the module's name is math, then
+   * the value of this field will name the global element as <math:config ../>
+   */
+  public static final String MODULE_CONFIG_GLOBAL_ELEMENT_NAME = "config";
+  public static final String MODULE_OPERATION_CONFIG_REF = "config-ref";
 
   /**
    * Creates an {code ApplicationModel} from a {@link ArtifactConfig}.
@@ -250,7 +259,7 @@ public class ApplicationModel {
    * @throws Exception when the application configuration has semantic errors.
    */
   public ApplicationModel(ArtifactConfig artifactConfig, ArtifactConfiguration artifactConfiguration) throws Exception {
-    this(artifactConfig, artifactConfiguration, empty());
+    this(artifactConfig, artifactConfiguration, empty(), empty());
   }
 
   /**
@@ -266,6 +275,7 @@ public class ApplicationModel {
    */
   // TODO: MULE-9638 remove this optional
   public ApplicationModel(ArtifactConfig artifactConfig, ArtifactConfiguration artifactConfiguration,
+                          Optional<ModuleExtensionStore> moduleLoader,
                           Optional<ComponentBuildingDefinitionRegistry> componentBuildingDefinitionRegistry)
       throws Exception {
     configurePropertyPlaceholderResolver(artifactConfig);
@@ -273,6 +283,13 @@ public class ApplicationModel {
     convertArtifactConfigurationToComponentModel(artifactConfiguration);
     validateModel(componentBuildingDefinitionRegistry);
     createEffectiveModel();
+
+    if (moduleLoader.isPresent()) {
+      createOperationRefEffectiveModel(moduleLoader.get());
+      createConfigRefEffectiveModel(moduleLoader.get());
+    }
+    //TODO WIP MULE-10252 useful to debug faster
+    //System.out.println("App before starting things up \n" + this.getRootComponentModel().toXml());
   }
 
   /**
@@ -300,6 +317,191 @@ public class ApplicationModel {
     });
   }
 
+  /**
+   * //TODO WIP MULE-10252 replacement logic begins
+   */
+  private void createOperationRefEffectiveModel(ModuleExtensionStore moduleExtensionStore) {
+    HashMap<Integer, ComponentModel> componentModelsToReplaceByIndex = new HashMap<>();
+
+    executeOnEveryMuleComponentTree(componentModel -> {
+      for (int i = 0; i < componentModel.getInnerComponents().size(); i++) {
+        ComponentModel operationRefModel = componentModel.getInnerComponents().get(i);
+
+        ComponentIdentifier identifier = operationRefModel.getIdentifier();
+        ModuleExtension moduleExtension = moduleExtensionStore.lookupByName(identifier.getNamespace());
+        if (moduleExtension != null
+            && !identifier.getName().equals(MODULE_CONFIG_GLOBAL_ELEMENT_NAME)) //TODO WIP MULE-10252 ideally only elements of flow, flow-ref, batch should be processed.. refactor/fix this
+        {
+
+          OperationExtension operationExtension = moduleExtension.getOperations().get(identifier.getName());
+          ComponentModel replacementModel = createOperationInstance(operationRefModel, moduleExtension, operationExtension);
+          componentModelsToReplaceByIndex.put(i, replacementModel);
+        }
+      }
+      for (Map.Entry<Integer, ComponentModel> entry : componentModelsToReplaceByIndex.entrySet()) {
+        entry.getValue().setParent(componentModel);
+        componentModel.getInnerComponents().add(entry.getKey(), entry.getValue());
+        componentModel.getInnerComponents().remove(entry.getKey() + 1);
+      }
+      componentModelsToReplaceByIndex.clear();
+    });
+  }
+
+  private void createConfigRefEffectiveModel(ModuleExtensionStore moduleExtensionStore) {
+    this.muleComponentModels.stream()
+        .forEach(componentModel -> {
+          HashMap<Integer, List<ComponentModel>> componentModelsToReplaceByIndex = new HashMap<>();
+
+          for (int i = 0; i < componentModel.getInnerComponents().size(); i++) {
+            ComponentModel configRefModel = componentModel.getInnerComponents().get(i);
+            ComponentIdentifier identifier = configRefModel.getIdentifier();
+            ModuleExtension moduleExtension = moduleExtensionStore.lookupByName(identifier.getNamespace());
+            if (moduleExtension != null) {
+              List<ComponentModel> replacementGlobalElements = createGlobalElementsInstance(configRefModel, moduleExtension);
+              componentModelsToReplaceByIndex.put(i, replacementGlobalElements);
+            }
+          }
+          for (Map.Entry<Integer, List<ComponentModel>> entry : componentModelsToReplaceByIndex.entrySet()) {
+            componentModel.getInnerComponents().addAll(entry.getKey(), entry.getValue());
+            componentModel.getInnerComponents().remove(entry.getKey() + entry.getValue().size());
+          }
+          //componentModelsToReplaceByIndex.clear();
+        });
+  }
+
+  private List<ComponentModel> createGlobalElementsInstance(ComponentModel configRefModel, ModuleExtension moduleExtension) {
+    List<ComponentModel> globalElementsModel = new ArrayList<>();
+
+    globalElementsModel.addAll(moduleExtension.getGlobalElements().stream()
+        .map(globalElementModel -> copyComponentModel(globalElementModel, configRefModel.getNameAttribute()))
+        .collect(Collectors.toList()));
+
+    ComponentModel muleRootElement = configRefModel.getParent();
+    globalElementsModel.stream().forEach(componentModel -> {
+      componentModel.setRoot(true);
+      componentModel.setParameter(NAME_ATTRIBUTE, componentModel.getNameAttribute() + "-" + configRefModel.getNameAttribute());
+      componentModel.setParent(muleRootElement);
+    });
+
+    return globalElementsModel;
+  }
+
+  private ComponentModel createOperationInstance(ComponentModel operationRefModel, ModuleExtension moduleExtension,
+                                                 OperationExtension operationExtension) {
+    List<ComponentModel> bodyProcessors = operationExtension.getMessageProcessorsComponentModels();
+
+    String configRefName = operationRefModel.getParameters().get(MODULE_OPERATION_CONFIG_REF);
+
+    ComponentModel.Builder processorChainBuilder = new ComponentModel.Builder();
+    processorChainBuilder
+        .setIdentifier(new ComponentIdentifier.Builder().withNamespace("mule").withName("module-operation-chain").build());
+
+    processorChainBuilder.addParameter("returnsVoid", Boolean.toString(operationExtension.returnsVoid()), false);
+    Map<String, String> propertiesMap = extractProperties(operationRefModel, moduleExtension);
+    Map<String, String> parametersMap = extractParameters(operationRefModel, operationExtension.getParameters());
+    ComponentModel propertiesComponentModel =
+        getParameterChild(propertiesMap, "module-operation-properties", "module-operation-property-entry");
+    ComponentModel parametersComponentModel =
+        getParameterChild(parametersMap, "module-operation-parameters", "module-operation-parameter-entry");
+    processorChainBuilder.addChildComponentModel(propertiesComponentModel);
+    processorChainBuilder.addChildComponentModel(parametersComponentModel);
+
+    for (ComponentModel bodyProcessor : bodyProcessors) {
+      processorChainBuilder.addChildComponentModel(copyComponentModel(bodyProcessor, configRefName));
+    }
+    for (Map.Entry<String, Object> customAttributeEntry : operationRefModel.getCustomAttributes().entrySet()) {
+      processorChainBuilder.addCustomAttribute(customAttributeEntry.getKey(), customAttributeEntry.getValue());
+    }
+    ComponentModel processorChainModel = processorChainBuilder.build();
+    for (ComponentModel processoChainModelChild : processorChainModel.getInnerComponents()) {
+      processoChainModelChild.setParent(processorChainModel);
+    }
+    return processorChainModel;
+  }
+
+  private ComponentModel getParameterChild(Map<String, String> parameters, String wrapperParameters, String entryParameter) {
+    ComponentModel.Builder parametersBuilder = new ComponentModel.Builder();
+    parametersBuilder
+        .setIdentifier(new ComponentIdentifier.Builder().withNamespace("mule").withName(wrapperParameters).build());
+    parameters.forEach((paramName, paramValue) -> {
+      ComponentModel.Builder parameterBuilder = new ComponentModel.Builder();
+      parameterBuilder.setIdentifier(new ComponentIdentifier.Builder().withNamespace("mule")
+          .withName(entryParameter).build());
+
+      parameterBuilder.addParameter("key", paramName, false);
+      parameterBuilder.addParameter("value", paramValue, false);
+      parametersBuilder.addChildComponentModel(parameterBuilder.build());
+    });
+
+    ComponentModel parametersComponentModel = parametersBuilder.build();
+    for (ComponentModel parameterComponentModel : parametersComponentModel.getInnerComponents()) {
+      parameterComponentModel.setParent(parametersComponentModel);
+    }
+    return parametersComponentModel;
+  }
+
+  private Map<String, String> extractProperties(ComponentModel operationRefModel, ModuleExtension moduleExtension) {
+    Map<String, String> valuesMap = new HashMap<>();
+    //extract the <properties>
+    String configParameter = operationRefModel.getParameters().get(ModuleSchemaGenerator.CONFIG_REF_GLOBAL_ELEMENT_NAME);
+    if (configParameter != null) {
+      ComponentModel configRefComponentModel = this.muleComponentModels.get(0).getInnerComponents().stream()
+          .filter(componentModel -> componentModel.getIdentifier().getNamespace().equals(moduleExtension.getName())
+              && componentModel.getIdentifier().getName().equals(MODULE_CONFIG_GLOBAL_ELEMENT_NAME)
+              && configParameter.equals(componentModel.getParameters().get(NAME_ATTRIBUTE)))
+          .findFirst()
+          .orElseThrow(() -> new IllegalArgumentException(String
+              .format("There's no <%s:config> named [%s] in the current mule app", moduleExtension.getName(), configParameter)));
+      valuesMap
+          .putAll(extractParameters(configRefComponentModel, moduleExtension.getProperties()));
+    }
+    return valuesMap;
+  }
+
+  private Map<String, String> extractParameters(ComponentModel componentModel, List<ParameterExtension> parameters) {
+    Map<String, String> valuesMap = new HashMap<>();
+    for (ParameterExtension parameterExtension : parameters) {
+      String paramName = parameterExtension.getName();
+      String value = null;
+      if (componentModel.getParameters().containsKey(paramName)) {
+        value = componentModel.getParameters().get(paramName);
+      } else if (parameterExtension.getDefaultValue().isPresent()) {
+        value = parameterExtension.getDefaultValue().get();
+      }
+      valuesMap.put(paramName, value);
+    }
+    return valuesMap;
+  }
+
+  private ComponentModel copyComponentModel(ComponentModel modelToCopy,
+                                            String configRefName) {
+    ComponentModel.Builder operationReplacementModel = new ComponentModel.Builder();
+    operationReplacementModel
+        .setIdentifier(modelToCopy.getIdentifier())
+        .setTextContent(modelToCopy.getTextContent());
+    for (Map.Entry<String, Object> entry : modelToCopy.getCustomAttributes().entrySet()) {
+      operationReplacementModel.addCustomAttribute(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : modelToCopy.getParameters().entrySet()) {
+      String value = entry.getKey().endsWith(REFERENCE_ATTRIBUTE)
+          ? entry.getValue().concat("-").concat(configRefName) //TODO WIP MULE-10252 try to replace string handling by using an AbstractAttributeDefinitionVisitor
+          : entry.getValue();
+      operationReplacementModel.addParameter(entry.getKey(), value, false);
+    }
+    for (ComponentModel operationChildModel : modelToCopy.getInnerComponents()) {
+      operationReplacementModel.addChildComponentModel(copyComponentModel(//parameterValues,
+                                                                          operationChildModel, configRefName));
+    }
+    ComponentModel componentModel = operationReplacementModel.build();
+    for (ComponentModel child : componentModel.getInnerComponents()) {
+      child.setParent(componentModel);
+    }
+    return componentModel;
+  }
+
+  /**
+   * //TODO WIP MULE-10252 end of replacement logic
+   */
 
   private void convertArtifactConfigurationToComponentModel(ArtifactConfiguration artifactConfiguration) {
     if (artifactConfiguration != null) {
@@ -382,13 +584,14 @@ public class ApplicationModel {
 
   private void convertConfigFileToComponentModel(ArtifactConfig artifactConfig) {
     List<ConfigFile> configFiles = artifactConfig.getConfigFiles();
+    ComponentModelReader componentModelReader = new ComponentModelReader(applicationProperties);
     configFiles.stream().forEach(configFile -> {
-      List<ComponentModel> componentModels =
-          extractComponentDefinitionModel(asList(configFile.getConfigLines().get(0)), configFile.getFilename());
+      ComponentModel componentModel =
+          componentModelReader.extractComponentDefinitionModel(configFile.getConfigLines().get(0), configFile.getFilename());
       if (isMuleConfigFile(configFile)) {
-        muleComponentModels.addAll(componentModels);
+        muleComponentModels.add(componentModel);
       } else {
-        springComponentModels.addAll(componentModels);
+        springComponentModels.add(componentModel);
       }
     });
 
@@ -600,49 +803,6 @@ public class ApplicationModel {
       executeOnComponentTree(innerComponent, task, avoidSpringElements);
     });
     task.accept(component);
-  }
-
-  private List<ComponentModel> extractComponentDefinitionModel(List<ConfigLine> configLines, String configFileName) {
-    List<ComponentModel> models = new ArrayList<>();
-    for (final ConfigLine configLine : configLines) {
-      String namespace = configLine.getNamespace() == null ? CORE_NAMESPACE : configLine.getNamespace();
-      ComponentModel.Builder builder = new ComponentModel.Builder()
-          .setIdentifier(new ComponentIdentifier.Builder().withNamespace(namespace).withName(configLine.getIdentifier()).build())
-          .setTextContent(configLine.getTextContent());
-      to(builder).addNode(from(configLine).getNode()).addConfigFileName(configFileName);
-      for (SimpleConfigAttribute simpleConfigAttribute : configLine.getConfigAttributes().values()) {
-        builder.addParameter(simpleConfigAttribute.getName(), resolveValueIfIsPlaceHolder(simpleConfigAttribute.getValue()),
-                             simpleConfigAttribute.isValueFromSchema());
-      }
-      List<ComponentModel> componentModels = extractComponentDefinitionModel(configLine.getChildren(), configFileName);
-      componentModels.stream().forEach(componentDefinitionModel -> {
-        if (SPRING_PROPERTY_IDENTIFIER.equals(componentDefinitionModel.getIdentifier())) {
-          String value = componentDefinitionModel.getParameters().get(VALUE_ATTRIBUTE);
-          if (value != null) {
-            builder.addParameter(componentDefinitionModel.getNameAttribute(), resolveValueIfIsPlaceHolder(value), false);
-          }
-        }
-        builder.addChildComponentModel(componentDefinitionModel);
-      });
-      ConfigLine parent = configLine.getParent();
-      if (parent != null && isConfigurationTopComponent(parent)) {
-        builder.markAsRootComponent();
-      }
-      ComponentModel componentModel = builder.build();
-      for (ComponentModel innerComponentModel : componentModel.getInnerComponents()) {
-        innerComponentModel.setParent(componentModel);
-      }
-      models.add(componentModel);
-    }
-    return models;
-  }
-
-  private String resolveValueIfIsPlaceHolder(String value) {
-    return propertyPlaceholderHelper.replacePlaceholders(value, applicationProperties);
-  }
-
-  private boolean isConfigurationTopComponent(ConfigLine parent) {
-    return (parent.getIdentifier().equals(MULE_ROOT_ELEMENT) || parent.getIdentifier().equals(MULE_DOMAIN_ROOT_ELEMENT));
   }
 
   private ComponentModel innerFindComponentDefinitionModel(Element element, List<ComponentModel> componentModels) {

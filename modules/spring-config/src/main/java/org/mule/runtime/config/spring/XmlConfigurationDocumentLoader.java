@@ -6,13 +6,17 @@
  */
 package org.mule.runtime.config.spring;
 
+import static java.lang.String.format;
+import org.mule.runtime.config.spring.dsl.model.extension.loader.ModuleExtensionStore;
 import org.mule.runtime.core.api.MuleRuntimeException;
 
 import java.io.InputStream;
 
-import org.springframework.beans.factory.xml.DelegatingEntityResolver;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -35,15 +39,42 @@ public class XmlConfigurationDocumentLoader {
    * @return a new {@link Document} object with the provided content.
    */
   public Document loadDocument(InputStream inputStream) {
+    //TODO WIP MULE-10252 either use Optional or fix tests to pass an empty element
+    return loadDocument(null, inputStream);
+  }
+
+  public Document loadDocument(ModuleExtensionStore moduleExtensionStore, InputStream inputStream) {
     try {
+      MuleLoggerErrorHandler errorHandler = new MuleLoggerErrorHandler();
       Document document = new MuleDocumentLoader()
           .loadDocument(new InputSource(inputStream),
-                        new DelegatingEntityResolver(Thread.currentThread().getContextClassLoader()), new DefaultHandler(),
+                        new ModuleDelegatingEntityResolver(moduleExtensionStore), errorHandler,
                         VALIDATION_XSD, true);
+      errorHandler.throwExceptionIfNeeded();
       return document;
     } catch (Exception e) {
       throw new MuleRuntimeException(e);
     }
   }
 
+  /**
+   * helper class to gather all errors while applying the found XSDs for the current input stream
+   */
+  public static class MuleLoggerErrorHandler extends DefaultHandler {
+
+    StringBuilder sb = new StringBuilder();
+
+    @Override
+    public void error(SAXParseException e) throws SAXException {
+      sb.append(format("\terror:%s\n", e.toString()));
+    }
+
+    public void throwExceptionIfNeeded() {
+      String errors = sb.toString();
+      if (StringUtils.isNotBlank(errors)) {
+        String errorOrErrors = "Gathered errors:";
+        throw new IllegalArgumentException(format(errorOrErrors + " \n %s", errors));
+      }
+    }
+  }
 }
